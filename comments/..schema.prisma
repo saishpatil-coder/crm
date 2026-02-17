@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum RoleName {
+  MASTER_ADMIN
+  SUB_ADMIN
+  WORKER
+}
+
+enum SupportStatus {
+  SUPPORTER
+  NEUTRAL
+  OPPONENT
+  UNKNOWN
+}
+
+//////////////////////////////////////////////////////
+// CORE TENANT
+//////////////////////////////////////////////////////
+
+model Tenant {
+  id                   Int      @id @default(autoincrement())
+  candidateName        String
+  partyName            String?
+  logoUrl              String?
+  constituencyName     String
+  constituencyNumber   String?
+  electionType         String?
+  status               Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users                User[]
+  constituencies       Constituency[]
+  gans                 Gan[]
+  villages             Village[]
+  booths               Booth[]
+  voters               Voter[]
+  families             Family[]
+  activityLogs         ActivityLog[]
+  exportLogs           ExportLog[]
+  voterUpdateLogs      VoterUpdateLog[]
+  userBoothAssignments UserBoothAssignment[]
+
+}
+
+//////////////////////////////////////////////////////
+// ROLE
+//////////////////////////////////////////////////////
+
+model Role {
+  id        Int       @id @default(autoincrement())
+  name      RoleName  @unique
+  users     User[]
+}
+
+//////////////////////////////////////////////////////
+// USER
+//////////////////////////////////////////////////////
+
+model User {
+  id              Int       @id @default(autoincrement())
+  tenantId        Int?
+  roleId          Int
+  name            String
+  mobileNumber    String    @unique
+  passwordHash    String?
+  status          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant?   @relation(fields: [tenantId], references: [id])
+  role            Role      @relation(fields: [roleId], references: [id])
+  boothAssignments UserBoothAssignment[]
+  voterUpdates    VoterUpdateLog[]
+  activityLogs    ActivityLog[]
+  exportLogs      ExportLog[]
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// USER-BOOTH ASSIGNMENT (Many-to-Many)
+//////////////////////////////////////////////////////
+
+model UserBoothAssignment {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  userId    Int
+  boothId   Int
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  booth     Booth    @relation(fields: [boothId], references: [id])
+
+  @@unique([userId, boothId])
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// HIERARCHY STRUCTURE
+//////////////////////////////////////////////////////
+
+model Constituency {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  name      String
+  number    String?
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  gans      Gan[]
+
+  @@index([tenantId])
+}
+
+model Gan {
+  id               Int      @id @default(autoincrement())
+  tenantId         Int
+  constituencyId   Int
+  name             String
+  createdAt        DateTime @default(now())
+
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  constituency     Constituency  @relation(fields: [constituencyId], references: [id])
+  villages         Village[]
+
+  @@index([tenantId])
+}
+
+model Village {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  ganId     Int
+  name      String
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  gan       Gan      @relation(fields: [ganId], references: [id])
+  booths    Booth[]
+
+  @@index([tenantId])
+}
+
+model Booth {
+  id           Int      @id @default(autoincrement())
+  tenantId     Int
+  villageId    Int
+  boothNumber  String
+  totalVoters  Int?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  village      Village  @relation(fields: [villageId], references: [id])
+  voters       Voter[]
+  assignments  UserBoothAssignment[]
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// FAMILY
+//////////////////////////////////////////////////////
+
+model Family {
+  id            Int      @id @default(autoincrement())
+  tenantId      Int
+  headVoterId   Int?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  voters        Voter[]
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// VOTER
+//////////////////////////////////////////////////////
+
+model Voter {
+  id              Int            @id @default(autoincrement())
+  tenantId        Int
+  boothId         Int
+  voterIdNumber   String
+  name            String
+  age             Int?
+  gender          String?
+  caste           String?
+  religion        String?
+  houseNumber     String?
+  addressLine1    String?
+  addressLine2    String?
+  mobileNumber    String?
+  isAlive         Boolean        @default(true)
+  hasVoted        Boolean        @default(false)
+  supportStatus   SupportStatus  @default(UNKNOWN)
+  isStarVoter     Boolean        @default(false)
+  isInfluencer    Boolean        @default(false)
+  familyId        Int?
+  notes           String?
+  versionNumber   Int            @default(1)
+  lastUpdatedBy   Int?
+  lastUpdatedAt   DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  isDeleted       Boolean        @default(false)
+
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  booth           Booth          @relation(fields: [boothId], references: [id])
+  family          Family?        @relation(fields: [familyId], references: [id])
+  updateLogs      VoterUpdateLog[]
+
+  @@unique([tenantId, voterIdNumber])
+  @@index([tenantId])
+  @@index([boothId])
+  @@index([supportStatus])
+  @@index([hasVoted])
+  @@index([isStarVoter])
+}
+
+//////////////////////////////////////////////////////
+// VOTER UPDATE LOG
+//////////////////////////////////////////////////////
+
+model VoterUpdateLog {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  voterId     Int
+  userId      Int
+  fieldName   String
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  voter       Voter    @relation(fields: [voterId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// ACTIVITY LOG
+//////////////////////////////////////////////////////
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  userId      Int
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// EXPORT LOG
+//////////////////////////////////////////////////////
+
+model ExportLog {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  userId      Int
+  exportType  String
+  filtersJson Json?
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+}
+
+
+model Otp {
+  id           Int      @id @default(autoincrement())
+  mobileNumber String
+  codeHash     String
+  expiresAt    DateTime
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([mobileNumber])
+}
