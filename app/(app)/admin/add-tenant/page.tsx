@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { apiClient } from '@/lib/appClient';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/app/lib/appClient';
+import { useState } from 'react';
 
 export default function AddTenantPage() {
   const router = useRouter();

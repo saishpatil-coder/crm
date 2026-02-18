@@ -18,12 +18,22 @@ export interface SyncQueueItem {
   payload: any;
   createdAt: number;
 }
-
+export interface LocalTenant {
+  id: number;
+  candidateName: string;
+  partyName: string;
+  constituencyName: string;
+  status: boolean;
+  _count: {
+    users: number;
+    voters: number;
+  };
+}
 // 2. Initialize the Dexie Database
 export class CampaignDatabase extends Dexie {
   voters!: Table<LocalVoter>;
   syncQueue!: Table<SyncQueueItem>;
-
+  tenants!: Table<LocalTenant>; // <--- Add this
   constructor() {
     super("CampaignDB");
 

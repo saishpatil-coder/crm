@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { apiClient } from '@/app/lib/appClient';
+import { apiClient } from '@/lib/appClient';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function TenantDetailsPage() {
   const router = useRouter();

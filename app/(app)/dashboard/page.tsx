@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { apiClient } from '@/lib/appClient';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
-import { apiClient } from '@/app/lib/appClient';
+import { useEffect, useState } from 'react';
 
 const dict = {
   en: {

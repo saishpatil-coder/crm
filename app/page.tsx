@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from './context/AuthContext';
-import { apiClient } from './lib/appClient';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/appClient';
 
 // Updated Dictionary
 const dict = {

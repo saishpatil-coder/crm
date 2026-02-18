@@ -1,39 +1,79 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useNetwork } from '@/hooks/useNetwork'; // Use the hook we created earlier
+import { apiClient } from '@/lib/appClient';
+import { localDb, LocalTenant } from '@/lib/db'; // Import your local DB
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/app/lib/appClient';
+import { useEffect, useState } from 'react';
 
 const dict = {
-  en: { title: "All Campaigns", search: "Search candidate or constituency...", noResults: "No campaigns found." },
-  mr: { title: "सर्व मोहिमा", search: "उमेदवार किंवा मतदारसंघ शोधा...", noResults: "कोणतीही मोहीम सापडली नाही." },
-  hi: { title: "सभी अभियान", search: "उम्मीदवार या निर्वाचन क्षेत्र खोजें...", noResults: "कोई अभियान नहीं मिला।" }
+  en: { 
+    title: "All Campaigns", 
+    search: "Search candidate or constituency...", 
+    noResults: "No campaigns found.",
+    offlineMode: "You are offline. Showing cached data."
+  },
+  mr: { 
+    title: "सर्व मोहिमा", 
+    search: "उमेदवार किंवा मतदारसंघ शोधा...", 
+    noResults: "कोणतीही मोहीम सापडली नाही.",
+    offlineMode: "तुम्ही ऑफलाइन आहात. जुना डेटा दाखवत आहे."
+  },
+  hi: { 
+    title: "सभी अभियान", 
+    search: "उम्मीदवार या निर्वाचन क्षेत्र खोजें...", 
+    noResults: "कोई अभियान नहीं मिला।",
+    offlineMode: "आप ऑफ़लाइन हैं। कैश किया गया डेटा दिखाया जा रहा है।"
+  }
 };
 
 type Language = 'en' | 'mr' | 'hi';
 
 export default function TenantsListPage() {
   const router = useRouter();
-  const [lang] = useState<Language>('mr'); // Hardcoded for now, can be pulled from context
-  const [tenants, setTenants] = useState<any[]>([]);
+  const isOnline = useNetwork(); // Check real-time network status
+  
+  const [lang] = useState<Language>('mr');
+  const [tenants, setTenants] = useState<LocalTenant[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isUsingCache, setIsUsingCache] = useState(false);
 
   const t = dict[lang];
 
   useEffect(() => {
-    const fetchTenants = async () => {
+    const loadData = async () => {
+      setIsLoading(true);
+      
       try {
-        const { data } = await apiClient.get('/admin/tenants');
-        setTenants(data);
+        if (navigator.onLine) {
+          // STRATEGY 1: Network First
+          const { data } = await apiClient.get('/admin/tenants');
+          
+          // Save fresh data to local DB for next time (Cache it!)
+          // bulkPut updates existing records and adds new ones
+          await localDb.tenants.bulkPut(data);
+          
+          setTenants(data);
+          setIsUsingCache(false);
+        } else {
+          throw new Error("Offline");
+        }
       } catch (error) {
-        console.error("Failed to fetch tenants", error);
+        console.warn("Network failed, falling back to cache...", error);
+        
+        // STRATEGY 2: Cache Fallback
+        // Fetch everything from local IndexedDB
+        const cachedTenants = await localDb.tenants.toArray();
+        setTenants(cachedTenants);
+        setIsUsingCache(true);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchTenants();
-  }, []);
+
+    loadData();
+  }, [isOnline]); // Re-run whenever network status changes
 
   // Client-side search filtering
   const filteredTenants = tenants.filter(t => 
@@ -52,6 +92,7 @@ export default function TenantsListPage() {
           </button>
           <h1 className="text-xl font-extrabold text-gray-900">{t.title}</h1>
         </div>
+        
         <input 
           type="text" 
           placeholder={t.search}
@@ -59,6 +100,14 @@ export default function TenantsListPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-12 px-4 bg-gray-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800"
         />
+
+        {/* Offline Indicator Banner */}
+        {isUsingCache && (
+          <div className="mt-3 bg-orange-50 border border-orange-200 text-orange-700 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
+            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+            {t.offlineMode}
+          </div>
+        )}
       </div>
 
       {/* List Area */}
@@ -79,7 +128,7 @@ export default function TenantsListPage() {
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                   tenant.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                 }`}>
-                  {tenant.status? 'ACTIVE' : 'INACTIVE'}
+                  {tenant.status ? 'ACTIVE' : 'INACTIVE'}
                 </span>
               </div>
               <p className="text-sm text-gray-500 font-medium mb-3">{tenant.constituencyName} ({tenant.partyName})</p>

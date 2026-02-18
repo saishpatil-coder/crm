@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "../context/AuthContext";
 import "./globals.css";
-import { AuthProvider } from "./context/AuthContext";
+import PwaGuard from "@/components/PwaGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <PwaGuard>
+        {children}
+        </PwaGuard>
         {children}
         </AuthProvider>
       </body>

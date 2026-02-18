@@ -1,13 +1,12 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define what your User object looks like
 interface User {
   id: string;
-  phone: string;
+  mobileNumber: string;
   role?: string;
-  // add other fields you return from your backend like 'tenantId'
+  tenantId?: number;
 }
 
 interface AuthContextType {
@@ -21,17 +20,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
+  // 🔥 Restore from localStorage on app load
+  useEffect(() => {
+    const storedUser = localStorage.getItem("auth_user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const login = (token: string, userData: User) => {
-    console.log("context : ",userData)
-    // 1. Save user in state
     setUser(userData);
-    // 2. Save token in a cookie so middleware can read it on page reloads
-    document.cookie = `auth_token=${token}; path=/; max-age=116786400; secure; samesite=lax`;
+
+    // Store token for middleware
+    document.cookie = `auth_token=${token}; path=/; max-age=86400; samesite=lax`;
+
+    // Store user for offline restore
+    localStorage.setItem("auth_user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
+
     document.cookie = 'auth_token=; Max-Age=0; path=/;';
+    localStorage.removeItem("auth_user");
+
     window.location.href = '/login';
   };
 
@@ -42,11 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use the auth context easily
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
