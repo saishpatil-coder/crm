@@ -42,6 +42,7 @@ export class CampaignDatabase extends Dexie {
     this.version(1).stores({
       voters: "&id, name, boothId, status, hasVoted, isSynced",
       syncQueue: "++id, action, createdAt", // ++ means auto-increment
+      tenants: "&id, candidateName, constituencyName", // <--- Add this (indexes for search)
     });
   }
 }
