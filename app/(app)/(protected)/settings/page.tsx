@@ -113,9 +113,10 @@ export default function SettingsPage() {
     console.log("returning null");
     return null; // Wait for AuthContext to load
   }
+  console.log(user);
 
   // Format role for display
-  const displayRole = user.role.name.replace('_', ' ');
+  const displayRole = user.role?.name?.replace('_', ' ');
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col pb-24 md:max-w-md md:mx-auto md:bg-gray-50 md:shadow-2xl md:border-x border-gray-200">
@@ -141,7 +142,7 @@ export default function SettingsPage() {
           
           <div className="w-24 h-24 bg-white border-4 border-white shadow-md rounded-full flex items-center justify-center text-4xl mt-4 overflow-hidden z-10">
             <span className="text-blue-500 font-bold bg-blue-50 w-full h-full flex items-center justify-center uppercase">
-              {user.name.charAt(0)}
+              {user.name?.charAt(0) || ""}
             </span>
           </div>
 
@@ -152,7 +153,7 @@ export default function SettingsPage() {
               {displayRole}
             </span>
             <span className="px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs font-extrabold text-gray-600 tracking-wide">
-              +91 {user.mobileNumber || user.phone}
+              +91 {user.mobileNumber}
             </span>
           </div>
         </div>

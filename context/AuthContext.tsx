@@ -11,8 +11,9 @@ import {
 interface User {
   id: string;
   mobileNumber: string;
-  role?: string;
+  role?: { name: string };
   tenantId?: number;
+  name?: string;
 }
 
 interface AuthContextType {
