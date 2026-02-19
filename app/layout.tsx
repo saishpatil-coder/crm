@@ -43,10 +43,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          {/* <PwaGuard>
+          <PwaGuard>
         {children}
-        </PwaGuard> */}
-        {children}
+        </PwaGuard>
+        {/* {children} */}
         {/* <InstallPrompt/> */}
         </AuthProvider>
 
