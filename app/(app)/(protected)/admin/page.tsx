@@ -1,5 +1,7 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useNetwork } from '@/hooks/useNetwork'; // Use the hook we created earlier
 import { apiClient } from '@/lib/appClient';
 import { localDb, LocalTenant } from '@/lib/db'; // Import your local DB
@@ -32,8 +34,7 @@ type Language = 'en' | 'mr' | 'hi';
 export default function TenantsListPage() {
   const router = useRouter();
   const isOnline = useNetwork(); // Check real-time network status
-  
-  const [lang] = useState<Language>('mr');
+  const {lang} = useLanguage();
   const [tenants, setTenants] = useState<LocalTenant[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);

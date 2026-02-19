@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const headerList = headers();
     const user = JSON.parse((await headerList).get("x-user") || "{}");
-
+console.log("logging in : " , user.role)
     if (user.role !== "MASTER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

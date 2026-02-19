@@ -1,6 +1,8 @@
 'use client';
 
+import { useNetwork } from '@/hooks/useNetwork';
 import { apiClient } from '@/lib/appClient';
+import { localDb } from '@/lib/db';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -8,10 +10,13 @@ export default function TenantDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const tenantId = params.id;
+  const isOnline = useNetwork();
+  const [error,setError] = useState("")
 
   const [tenant, setTenant] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [isUsingCache, setIsUsingCache] = useState(false);
+
   const [isToggling, setIsToggling] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -28,19 +33,40 @@ export default function TenantDetailsPage() {
     newPassword: '' 
   });
 
-  useEffect(() => {
+useEffect(() => {
     const fetchTenant = async () => {
+      setIsLoading(true);
       try {
-        const { data } = await apiClient.get(`/admin/tenants/${tenantId}`);
-        setTenant(data);
+        if (navigator.onLine) {
+          // 1. Try to get fresh data from server
+          const { data } = await apiClient.get(`/admin/tenants/${tenantId}`);
+          setTenant(data);
+          
+          // 2. Cache this detailed view locally so it's ready for offline use later
+          await localDb.tenants.put(data);
+          setIsUsingCache(false);
+        } else {
+          throw new Error("Offline");
+        }
       } catch (error) {
-        console.error("Failed to fetch tenant details", error);
+        console.warn("Network failed, fetching tenant from local IndexedDB...");
+        
+        // 3. Fallback: Query Dexie for this specific ID
+        const cachedData = await localDb.tenants.get(Number(tenantId));
+        if (cachedData) {
+          setTenant(cachedData);
+          setIsUsingCache(true);
+        } else {
+          // If it's not on the server AND not in the cache
+          setTenant(null); 
+        }
       } finally {
         setIsLoading(false);
       }
     };
+    
     if (tenantId) fetchTenant();
-  }, [tenantId]);
+  }, [tenantId, isOnline]);
 
   const handleToggleStatus = async () => {
     setIsToggling(true);
@@ -56,6 +82,10 @@ export default function TenantDetailsPage() {
   };
 
   const handleEditClick = () => {
+    if(!isOnline){
+      setError("")
+      return;
+    }
     setFormData({
       candidateName: tenant.candidateName || '',
       partyName: tenant.partyName || '',
@@ -147,6 +177,12 @@ export default function TenantDetailsPage() {
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">
           {isEditing ? 'Edit Campaign' : 'Campaign Details'}
         </h1>
+        {isUsingCache && !isEditing && (
+             <div className="mt-2 text-orange-600 text-xs font-bold flex items-center gap-1">
+               <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+               Viewing Offline Cached Data
+             </div>
+          )}
       </div>
 
       <div className="p-4 flex flex-col gap-6 w-full">

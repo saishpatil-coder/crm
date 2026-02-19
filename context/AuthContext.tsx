@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 interface User {
   id: string;
@@ -13,19 +19,26 @@ interface AuthContextType {
   user: User | null;
   login: (token: string, userData: User) => void;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-
+  const [isLoading, setIsLoading] = useState(true); // Start as loading
   // 🔥 Restore from localStorage on app load
   useEffect(() => {
     const storedUser = localStorage.getItem("auth_user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse stored user", e);
+      }
     }
+    // 2. Crucially, mark loading as false AFTER the check is complete
+    setIsLoading(false);
   }, []);
 
   const login = (token: string, userData: User) => {
@@ -41,14 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
 
-    document.cookie = 'auth_token=; Max-Age=0; path=/;';
+    document.cookie = "auth_token=; Max-Age=0; path=/;";
     localStorage.removeItem("auth_user");
-
-    window.location.href = '/login';
+console.trace("🚨 I AM REDIRECTING TO LOGIN! 🚨");
+    window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -56,6 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };

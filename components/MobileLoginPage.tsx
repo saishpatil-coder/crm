@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { apiClient } from '../../lib/appClient';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/appClient';
 
 // Updated Dictionary
 const dict = {
@@ -76,7 +76,7 @@ type Language = 'en' | 'mr' | 'hi';
 
 export default function MobileLoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login ,user} = useAuth();
   
   // State
   const [lang, setLang] = useState<Language>('mr');
@@ -140,14 +140,19 @@ export default function MobileLoginPage() {
       console.log(token,user)
       login(token, user);
       
-      router.push('/dashboard');
+      router.push('/admin/tenants');
     } catch (error: any) {
       setErrorMsg(error.response?.data?.error || t.genericError);
     } finally {
       setIsLoading(false);
     }
   };
-
+useEffect(()=>{
+  console.log("in compo")
+  if(user){
+    router.push('/admin/tenants');
+  }
+},[])
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col px-6 py-8 md:hidden">
       

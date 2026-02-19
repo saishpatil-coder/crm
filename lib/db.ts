@@ -21,12 +21,16 @@ export interface SyncQueueItem {
 export interface LocalTenant {
   id: number;
   candidateName: string;
-  partyName: string;
+  partyName: string | null;
   constituencyName: string;
-  status: boolean;
+  constituencyNumber: string | null;
+  status: string | boolean;
+  partyLogoUrl?: string | null;
+  candidatePhotoUrl?: string | null;
   _count: {
     users: number;
     voters: number;
+    booths: number;
   };
 }
 // 2. Initialize the Dexie Database
