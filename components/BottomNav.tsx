@@ -3,66 +3,90 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useState, useEffect } from "react";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { user,isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  // Track which route we are currently trying to navigate to
+  const [isNavigatingTo, setIsNavigatingTo] = useState<string | null>(null);
+
+  // Clear the loading state whenever the actual URL (pathname) finally changes
+  useEffect(() => {
+    setIsNavigatingTo(null);
+  }, [pathname]);
 
   if (isLoading) {
-    console.log("in bottome nav : loading")
-    return <div>Loading...</div>; // Or your loading spinner
+    return null; // Don't show the nav while auth is checking
   }
 
-  // If we finished loading and there IS no user, don't render the protected content
-  // (The useEffect above will handle the redirect)
   if (!user) {
-    console.log("routing from bottomnav")
     return null;
   }
 
-  // 1. Define distinct menus for each role
   const menus = {
     MASTER_ADMIN: [
-      { name: "Home", href: "/dashboard", icon: HomeIcon },
+      { name: "Home", href: "/admin", icon: HomeIcon },
       { name: "Campaigns", href: "/admin/tenants", icon: CampaignsIcon },
       { name: "Activity", href: "/admin/activity", icon: ActivityIcon },
     ],
     SUB_ADMIN: [
-      // This is the Candidate's Manager
       { name: "Overview", href: "/dashboard", icon: HomeIcon },
-      { name: "Workers", href: "/tenant/workers", icon: UsersIcon },
-      { name: "Booths", href: "/tenant/booths", icon: BoothsIcon },
+      { name: "Workers", href: "/dashboard/workers", icon: UsersIcon },
+      { name: "Booths", href: "/dashboard/booths", icon: BoothsIcon },
     ],
     WORKER: [
-      { name: "My Tasks", href: "/dashboard", icon: HomeIcon },
+      { name: "My Tasks", href: "/worker", icon: HomeIcon },
       { name: "Voters", href: "/worker/voters", icon: UsersIcon },
       { name: "Map", href: "/worker/map", icon: MapIcon },
     ],
   };
 
-  // 2. Select the right menu (fallback to WORKER if role is weird)
   const navItems = menus[user.role as keyof typeof menus] || menus.WORKER;
 
   return (
     <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-50 pb-safe md:max-w-md md:mx-auto md:left-0 md:right-0">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
-          // Check if current route matches the tab's href
-          const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+          // It's active if we are on the page, OR if we are currently navigating to it
+          const isCurrentlyActive = pathname === item.href;
+          const isLoadingThisRoute = isNavigatingTo === item.href;
+
+          // Determine if we should style it as active
+          const isActive = isCurrentlyActive || isLoadingThisRoute;
+
           return (
             <Link
               key={item.name}
               href={item.href}
+              onClick={(e) => {
+                // Don't show loading if they click the tab they are already on
+                if (pathname !== item.href) {
+                  setIsNavigatingTo(item.href);
+                }
+              }}
+              // Disable clicks via pointer-events if we are currently navigating anywhere
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${
-                isActive ? "text-blue-600" : "text-gray-400 hover:text-gray-600"
-              }`}
+                isNavigatingTo ? "pointer-events-none opacity-60" : ""
+              } ${isActive ? "text-blue-600 opacity-100" : "text-gray-400 hover:text-gray-600"}`}
             >
-              <item.icon
-                className={`w-6 h-6 ${isActive ? "stroke-current stroke-[2.5]" : "stroke-current stroke-[1.5]"}`}
-              />
+              {isLoadingThisRoute ? (
+                // Show a spinner instead of the icon if this specific route is loading
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <item.icon
+                  className={`w-6 h-6 ${
+                    isActive
+                      ? "stroke-current stroke-[2.5]"
+                      : "stroke-current stroke-[1.5]"
+                  }`}
+                />
+              )}
               <span
-                className={`text-[10px] uppercase tracking-wider ${isActive ? "font-black" : "font-bold"}`}
+                className={`text-[10px] uppercase tracking-wider ${
+                  isActive ? "font-black" : "font-bold"
+                }`}
               >
                 {item.name}
               </span>

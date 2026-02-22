@@ -1,5 +1,6 @@
 "use client";
 
+import { localDb } from "@/lib/db";
 import {
   createContext,
   useContext,
@@ -11,7 +12,7 @@ import {
 interface User {
   id: string;
   mobileNumber: string;
-  role?: { name: string };
+  role?: string ;
   tenantId?: number;
   name?: string;
 }
@@ -45,21 +46,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (token: string, userData: User) => {
     setUser(userData);
 
-    // Store token for middleware
-    document.cookie = `auth_token=${token}; path=/; max-age=86400; samesite=lax`;
-
     // Store user for offline restore
     localStorage.setItem("auth_user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-
-    document.cookie = "auth_token=; Max-Age=0; path=/;";
+    // 3. Clear all Dexie Database Tables
+    try {
+      await Promise.all([
+        localDb.voters.clear(),
+        localDb.syncQueue.clear(),
+        localDb.tenants.clear(),
+        localDb.workers.clear(),
+      ]);
+      console.log("Local database successfully wiped on logout.");
+    } catch (error) {
+      console.error("Failed to clear local database during logout:", error);
+    }
     localStorage.removeItem("auth_user");
-console.trace("🚨 I AM REDIRECTING TO LOGIN! 🚨");
+    console.trace("🚨 I AM REDIRECTING TO LOGIN! 🚨");
     window.location.href = "/login";
-  };
+  };;
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

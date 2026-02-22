@@ -61,28 +61,6 @@ export default function Header() {
 
         {/* App Title */}
         <h1 className="text-xl font-black tracking-wider">CAMPAIGN</h1>
-
-        {/* Sync/Fetch Button */}
-        <button
-          onClick={pullVoters}
-          disabled={isSyncing}
-          className="flex items-center gap-1 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 px-3 py-1.5 rounded-full text-xs font-bold transition-all disabled:opacity-70"
-        >
-          <svg
-            className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          {isSyncing ? t.syncing : t.sync}
-        </button>
       </div>
     </header>
   );

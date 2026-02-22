@@ -116,7 +116,7 @@ export default function SettingsPage() {
   console.log(user);
 
   // Format role for display
-  const displayRole = user.role?.name?.replace('_', ' ');
+  const displayRole = user.role?.replace('_', ' ');
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col pb-24 md:max-w-md md:mx-auto md:bg-gray-50 md:shadow-2xl md:border-x border-gray-200">

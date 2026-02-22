@@ -42,14 +42,11 @@ model Tenant {
   updatedAt            DateTime @updatedAt
 
   users                User[]
-  villages             Village[]
-  booths               Booth[]
   voters               Voter[]
   families             Family[]
   activityLogs         ActivityLog[]
   exportLogs           ExportLog[]
   voterUpdateLogs      VoterUpdateLog[]
-  boothAssignments     UserBoothAssignment[]
 }
 
 //////////////////////////////////////////////////////
@@ -79,7 +76,6 @@ model User {
 
   tenant          Tenant?   @relation(fields: [tenantId], references: [id])
   role            Role      @relation(fields: [roleId], references: [id])
-  boothAssignments UserBoothAssignment[]
   voterUpdates    VoterUpdateLog[]
   activityLogs    ActivityLog[]
   exportLogs      ExportLog[]
@@ -87,63 +83,6 @@ model User {
   @@index([tenantId])
 }
 
-//////////////////////////////////////////////////////
-// VILLAGE
-//////////////////////////////////////////////////////
-
-model Village {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
-  name      String
-  createdAt DateTime @default(now())
-
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  booths    Booth[]
-
-  @@unique([tenantId, name])
-  @@index([tenantId])
-}
-
-//////////////////////////////////////////////////////
-// BOOTH
-//////////////////////////////////////////////////////
-
-model Booth {
-  id           Int      @id @default(autoincrement())
-  tenantId     Int
-  villageId    Int
-  boothNumber  String
-  totalVoters  Int?
-  createdAt    DateTime @default(now())
-
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
-  village      Village  @relation(fields: [villageId], references: [id])
-  voters       Voter[]
-  assignments  UserBoothAssignment[]
-
-  @@unique([tenantId, boothNumber])
-  @@index([tenantId])
-  @@index([villageId])
-}
-
-//////////////////////////////////////////////////////
-// USER-BOOTH ASSIGNMENT (Worker restriction)
-//////////////////////////////////////////////////////
-
-model UserBoothAssignment {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int
-  userId    Int
-  boothId   Int
-  createdAt DateTime @default(now())
-
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  booth     Booth    @relation(fields: [boothId], references: [id])
-
-  @@unique([userId, boothId])
-  @@index([tenantId])
-}
 
 //////////////////////////////////////////////////////
 // FAMILY
@@ -166,42 +105,65 @@ model Family {
 //////////////////////////////////////////////////////
 
 model Voter {
-  id              Int            @id @default(autoincrement())
-  tenantId        Int
-  boothId         Int
-  voterIdNumber   String
-  name            String
-  age             Int?
-  gender          String?
-  caste           String?
-  houseNumber     String?
-  addressLine1    String?
-  addressLine2    String?
-  mobileNumber    String?
-  isAlive         Boolean        @default(true)
-  hasVoted        Boolean        @default(false)
-  supportStatus   SupportStatus  @default(UNKNOWN)
-  isStarVoter     Boolean        @default(false)
-  isInfluencer    Boolean        @default(false)
-  familyId        Int?
-  notes           String?
-  lastUpdatedBy   Int?
-  lastUpdatedAt   DateTime       @default(now())
-  createdAt       DateTime       @default(now())
-  isDeleted       Boolean        @default(false)
+  id               Int      @id @default(autoincrement())
+  
+  // Relations
+  tenantId         Int
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
 
-  tenant          Tenant         @relation(fields: [tenantId], references: [id])
-  booth           Booth          @relation(fields: [boothId], references: [id])
+  // Official Voting Details
+  epicNumber       String   // Card Number (e.g., RJH1200054) - Extremely Important
+  serialNumber     Int?     // Sr.No
+
+  // Demographics
+  fullName         String
+  firstName        String?
+  middleName       String?
+  lastName         String?
+  gender           String?  // We will normalize this to 'MALE', 'FEMALE', 'OTHER'
+  age              Int?
+  mobileNumber     String?
+    familyId        Int?
+    language         String?
+
   family          Family?        @relation(fields: [familyId], references: [id])
-  updateLogs      VoterUpdateLog[]
 
-  @@unique([tenantId, voterIdNumber])
-  @@index([tenantId])
-  @@index([boothId])
-  @@index([caste])
-  @@index([supportStatus])
-  @@index([hasVoted])
-  @@index([isStarVoter])
+
+  // Location Data
+  parlConstituency String?  // संसदीय मतदारसंघाचे नाव क्र
+  asmConstituency  String?  // विधानसभा मतदारसंघ नाव
+  cityVillage      String?  // मुख्य शहर
+  gramPanchayat    String?  // ग्रामपंचायत
+  houseNumber      String?  // घर क्र
+  ward             String?  // वार्ड
+  pollingStation   String?  // मतदान केंद्र
+  address          String?  // पत्ता
+
+  // Additional Meta
+  caste            String?  // Cast
+  otherInfo        String?  // Other Information
+  photoUrl         String?  // Photo
+
+  // CRM Tracking Metrics (Crucial for your PWA)
+  isAlive         Boolean        @default(true)
+  isVisited        Boolean  @default(false)
+  hasVoted         Boolean  @default(false)
+  supportLevel     String   @default("UNKNOWN") // UNKNOWN, STRONG, WEAK, OPPOSITION
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+    updateLogs      VoterUpdateLog[]
+      lastUpdatedBy   Int?
+  lastUpdatedAt   DateTime       @default(now())
+
+  notes           String?
+
+
+  // A voter's EPIC card should be unique per campaign/tenant
+  
+  // Indexes to make searching blazingly fast in the dashboard
+  @@index([tenantId, pollingStation])
+  @@index([tenantId, ward])
 }
 
 //////////////////////////////////////////////////////

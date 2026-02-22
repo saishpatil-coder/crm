@@ -57,8 +57,8 @@ export async function PATCH(
 ) {
   try {
     // 1. Authenticate Master Admin
-    const headerList = headers();
-    const user = JSON.parse((await headerList).get("x-user") || "{}");
+    const headerList = await headers();
+    const user = JSON.parse(headerList.get("x-user") || "{}");
 
     if (user.role !== "MASTER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -80,7 +80,6 @@ export async function PATCH(
     } = body;
 
     // 3. Build the update payload dynamically
-    // We only update image URLs if the frontend sent a new Base64 string
     const updateData: any = {
       candidateName,
       partyName,
@@ -96,7 +95,25 @@ export async function PATCH(
       updateData.partyLogoUrl = partyLogoBase64;
     }
 
-    // 4. Execute Transaction (Update Tenant + Optional Password Reset)
+    // --- THE FIX: DO HEAVY & READ-ONLY WORK OUTSIDE THE TRANSACTION ---
+
+    let passwordHash: string | undefined = undefined;
+    let subAdminRoleId: number | undefined = undefined;
+
+    // Hash the password AND fetch the role ID before opening the transaction block
+    if (newPassword && newPassword.trim() !== "") {
+      passwordHash = await bcrypt.hash(newPassword, 10);
+
+      const subAdminRole = await prisma.role.findUnique({
+        where: { name: "SUB_ADMIN" },
+      });
+
+      if (subAdminRole) {
+        subAdminRoleId = subAdminRole.id;
+      }
+    }
+
+    // 4. Execute Transaction (Now ONLY containing fast database writes)
     const updatedTenant = await prisma.$transaction(async (tx) => {
       // Update the Tenant details
       const tenant = await tx.tenant.update({
@@ -109,28 +126,17 @@ export async function PATCH(
         },
       });
 
-      // Update Sub-Admin password if a new one was provided
-      if (newPassword && newPassword.trim() !== "") {
-        const hash = await bcrypt.hash(newPassword, 10);
-
-        // Find the SUB_ADMIN role ID
-        const subAdminRole = await tx.role.findUnique({
-          where: { name: "SUB_ADMIN" },
+      // Update Sub-Admin password if we hashed a new one
+      if (passwordHash && subAdminRoleId) {
+        await tx.user.updateMany({
+          where: {
+            tenantId: tenantId,
+            roleId: subAdminRoleId,
+          },
+          data: {
+            passwordHash: passwordHash,
+          },
         });
-
-        if (subAdminRole) {
-          // Update the password for all SUB_ADMIN users belonging to this tenant
-          // (Usually, there is only one per tenant)
-          await tx.user.updateMany({
-            where: {
-              tenantId: tenantId,
-              roleId: subAdminRole.id,
-            },
-            data: {
-              passwordHash: hash,
-            },
-          });
-        }
       }
 
       return tenant;

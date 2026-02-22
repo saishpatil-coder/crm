@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/context/AuthContext';
-import { apiClient } from '@/lib/appClient';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
+import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/appClient";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
 // Updated Dictionary
 const dict = {
@@ -27,7 +26,7 @@ const dict = {
     hide: "Hide",
     mismatchError: "Passwords do not match.",
     genericError: "Something went wrong. Please try again.",
-    back: "Back to Number"
+    back: "Back to Number",
   },
   mr: {
     welcome: "मोहिमेत आपले स्वागत आहे",
@@ -48,7 +47,7 @@ const dict = {
     hide: "लपवा",
     mismatchError: "पासवर्ड जुळत नाहीत.",
     genericError: "काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा.",
-    back: "नंबरवर परत जा"
+    back: "नंबरवर परत जा",
   },
   hi: {
     welcome: "अभियान में आपका स्वागत है",
@@ -69,46 +68,43 @@ const dict = {
     hide: "छिपाएं",
     mismatchError: "पासवर्ड मेल नहीं खाते।",
     genericError: "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
-    back: "नंबर पर वापस जाएं"
-  }
-};
+    back: "नंबर पर वापस जाएं",
+  },
+} as const;
 
-type Language = 'en' | 'mr' | 'hi';
+type Language = keyof typeof dict;
 
-export default function MobileLoginPage() {
+function MobileLoginContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { login ,user,logout,isLoading:loading} = useAuth();
-  
+  const { login, user, logout, isLoading: loading } = useAuth();
+
   // State
-  const [lang, setLang] = useState<Language>('mr');
+  const [lang, setLang] = useState<Language>("mr");
   const [step, setStep] = useState<1 | 2>(1);
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // New States for the Flow
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Flow States
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   const t = dict[lang];
 
   // STEP 1: Check if user exists and if they need a password
   const handleCheckUser = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (phone.length < 10) return;
-    
+
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
-      // You will need to create this backend endpoint!
-      const response = await apiClient.post('/auth/check-user', { phone });
-      
-      // Assume backend returns: { exists: true, hasPassword: false }
+      const response = await apiClient.post("/auth/check-user", { phone });
+
       if (!response.data.exists) {
         throw new Error("Account not found. Contact your manager.");
       }
@@ -116,7 +112,9 @@ export default function MobileLoginPage() {
       setIsSettingPassword(!response.data.hasPassword);
       setStep(2);
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.error || error.message || t.genericError);
+      setErrorMsg(
+        error.response?.data?.error || error.message || t.genericError,
+      );
     } finally {
       setIsLoading(false);
     }
@@ -133,17 +131,27 @@ export default function MobileLoginPage() {
     }
 
     setIsLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
-      const endpoint = isSettingPassword ? '/auth/set-password' : '/auth/login';
-      const response = await apiClient.post(endpoint, {mobileNumber : phone, password });
-      
-      const { token, user } = response.data;
-      console.log(token,user)
-      login(token, user);
-      
-      router.push('/admin/tenants');
+      const endpoint = isSettingPassword ? "/auth/set-password" : "/auth/login";
+      const response = await apiClient.post(endpoint, {
+        mobileNumber: phone,
+        password,
+      });
+
+      const { token, user: responseUser } = response.data;
+
+      const userData = {
+        id: responseUser.id,
+        mobileNumber: responseUser.mobileNumber,
+        role: responseUser.role?.name,
+        tenantId: responseUser.tenantId,
+        name: responseUser.name,
+      };
+
+      login(token, userData);
+      router.push("/");
     } catch (error: any) {
       setErrorMsg(error.response?.data?.error || t.genericError);
     } finally {
@@ -151,34 +159,40 @@ export default function MobileLoginPage() {
     }
   };
 
-useEffect(() => {
-  const errorType = searchParams.get("error");
+  useEffect(() => {
+    const errorType = searchParams.get("error");
 
-  if (errorType === "session_expired") {
-    logout();
-    router.push("/login");
+    if (errorType === "session_expired") {
+      logout();
+      router.push("/login");
+    }
+
+    if (user) {
+      const role = user.role;
+      if (role === "MASTER_ADMIN") router.push("/admin");
+      else if (role === "SUB_ADMIN") router.push("/dashboard");
+      else if (role === "WORKER") router.push("/mobile");
+    }
+  }, [searchParams, router, user, logout]);
+
+  // CRITICAL FIX: Ensure valid JSX is returned
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500 font-medium">Loading...</div>
+      </div>
+    );
   }
-   if (user) {
-     router.push("/admin/tenants");
-   }
-   
-}, [searchParams, router]);
-
-if(loading){
-  <div>Loading ...</div>
-  return;
-}
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col px-6 py-8 md:hidden">
-      
       <div className="flex justify-end mb-8">
-        <select 
+        <select
           className="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={lang}
           onChange={(e) => {
             setLang(e.target.value as Language);
-            setErrorMsg(''); 
+            setErrorMsg("");
           }}
         >
           <option value="mr">मराठी</option>
@@ -188,12 +202,19 @@ if(loading){
       </div>
 
       <div className="flex-1 flex flex-col justify-center mb-20">
-        
         <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
-          {step === 1 ? t.welcome : (isSettingPassword ? t.setPasswordTitle : t.welcomeBack)}
+          {step === 1
+            ? t.welcome
+            : isSettingPassword
+              ? t.setPasswordTitle
+              : t.welcomeBack}
         </h1>
         <p className="text-gray-600 mb-6">
-          {step === 1 ? t.subtitle : (isSettingPassword ? t.setPasswordSubtitle : `+91 ${phone}`)}
+          {step === 1
+            ? t.subtitle
+            : isSettingPassword
+              ? t.setPasswordSubtitle
+              : `+91 ${phone}`}
         </p>
 
         {errorMsg && (
@@ -220,7 +241,7 @@ if(loading){
                   className="w-full h-14 px-4 text-lg font-medium text-gray-900 focus:outline-none bg-white"
                   placeholder={t.phonePlaceholder}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
                 />
               </div>
             </div>
@@ -230,7 +251,7 @@ if(loading){
               disabled={phone.length < 10 || isLoading}
               className="mt-4 w-full h-14 bg-blue-600 text-white text-lg font-bold rounded-lg shadow-md disabled:bg-blue-300 active:bg-blue-700 transition-colors flex items-center justify-center"
             >
-              {isLoading ? '...' : t.next}
+              {isLoading ? "..." : t.next}
             </button>
           </form>
         )}
@@ -252,7 +273,7 @@ if(loading){
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setErrorMsg('');
+                    setErrorMsg("");
                   }}
                 />
                 <button
@@ -280,7 +301,7 @@ if(loading){
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
-                      setErrorMsg('');
+                      setErrorMsg("");
                     }}
                   />
                 </div>
@@ -289,30 +310,49 @@ if(loading){
 
             <button
               type="submit"
-              disabled={password.length === 0 || (isSettingPassword && confirmPassword.length === 0) || isLoading}
+              disabled={
+                password.length === 0 ||
+                (isSettingPassword && confirmPassword.length === 0) ||
+                isLoading
+              }
               className="mt-4 w-full h-14 bg-blue-600 text-white text-lg font-bold rounded-lg shadow-md disabled:bg-blue-300 active:bg-blue-700 transition-colors flex items-center justify-center"
             >
-              {isLoading ? '...' : (isSettingPassword ? t.setAndLogin : t.login)}
+              {isLoading ? "..." : isSettingPassword ? t.setAndLogin : t.login}
             </button>
 
             {/* Back button to fix typos in phone number */}
             <div className="flex justify-center mt-4">
-               <button 
-                 type="button" 
-                 onClick={() => {
-                   setStep(1);
-                   setPassword('');
-                   setConfirmPassword('');
-                   setErrorMsg('');
-                 }} 
-                 className="text-sm font-semibold text-gray-500 active:text-gray-800"
-               >
-                 {t.back}
-               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(1);
+                  setPassword("");
+                  setConfirmPassword("");
+                  setErrorMsg("");
+                }}
+                className="text-sm font-semibold text-gray-500 active:text-gray-800"
+              >
+                {t.back}
+              </button>
             </div>
           </form>
         )}
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense for Next.js best practices with useSearchParams
+export default function MobileLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <MobileLoginContent />
+    </Suspense>
   );
 }

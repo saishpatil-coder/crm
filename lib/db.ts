@@ -2,14 +2,30 @@ import Dexie, { Table } from "dexie";
 
 // 1. Define the TypeScript interfaces for our local tables
 export interface LocalVoter {
-  id: string; // We use string (UUID) so the frontend can generate IDs offline
-  name: string;
-  age: number;
-  gender: string;
-  boothId: number;
-  status: "FAVORABLE" | "NEUTRAL" | "OPPOSED" | "UNMAPPED";
+  id: number; // Matches Prisma's numeric ID
+  epicNumber: string;
+  fullName: string;
+  gender: string | null;
+  age: number | null;
+  mobileNumber: string | null;
+  ward: string | null;
+  pollingStation: string | null;
+  isVisited: boolean;
   hasVoted: boolean;
-  isSynced: boolean; // Tells us if this exists on the real backend
+  supportLevel: string;
+}
+
+export interface Worker {
+  id: string;
+  tenantId: number;
+  roleId: number;
+  name: string;
+  mobileNumber: string;
+  passwordHash: string;
+  status: Boolean;
+  _count: {
+    boothAssignments: number;
+  };
 }
 
 export interface SyncQueueItem {
@@ -38,15 +54,18 @@ export class CampaignDatabase extends Dexie {
   voters!: Table<LocalVoter>;
   syncQueue!: Table<SyncQueueItem>;
   tenants!: Table<LocalTenant>; // <--- Add this
+  workers!: Table<Worker>;
   constructor() {
     super("CampaignDB");
 
     // Define the schema (indexes for fast searching)
     // The '&' means unique. Indexes allow us to filter by boothId or status offline!
-    this.version(1).stores({
-      voters: "&id, name, boothId, status, hasVoted, isSynced",
-      syncQueue: "++id, action, createdAt", // ++ means auto-increment
-      tenants: "&id, candidateName, constituencyName", // <--- Add this (indexes for search)
+    this.version(2).stores({
+      // & epicNumber ensures it is a unique index offline too
+      voters: "id, &epicNumber, fullName, pollingStation, ward, isVisited, hasVoted, supportLevel",
+      syncQueue: "++id, action, createdAt",
+      tenants: "&id, candidateName, constituencyName",
+      workers: "id, tenantId, roleId, name, mobileNumber, status",
     });
   }
 }

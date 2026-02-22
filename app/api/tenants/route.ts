@@ -97,9 +97,16 @@ export async function GET() {
   if (user.role === "SUB_ADMIN") {
     const tenant = await prisma.tenant.findUnique({
       where: { id: user.tenantId },
+      include: {
+        _count: {
+          select: { users: true, voters: true }, // Grab the live stats!
+        },
+      },
     });
 
-    return NextResponse.json({ tenant });
+    // Wrap the tenant in an array so the frontend useOfflineData hook
+    // can successfully save it to the localDb using bulkPut()
+    return NextResponse.json(tenant ? [tenant] : []);
   }
 
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>javascript-revision-guide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="complete-full-stack-javascript-revision-guide">Complete Full Stack JavaScript Revision Guide</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#1-deep-dive-introduction-to-javascript-for-full-stack">1. Deep Dive: Introduction to JavaScript for Full Stack</a></li>
+<li><a href="#2-variables-scope-and-hoisting">2. Variables, Scope, and Hoisting</a></li>
+<li><a href="#3-data-types-operators-and-type-conversion">3. Data Types, Operators, and Type Conversion</a></li>
+<li><a href="#4-control-flow-conditionals-and-switch-statements">4. Control Flow: Conditionals and Switch Statements</a></li>
+<li><a href="#5-logical-operators--short-circuiting">5. Logical Operators &amp; Short-Circuiting</a></li>
+<li><a href="#6-loops-and-iteration">6. Loops and Iteration</a></li>
+<li><a href="#7-functions-the-basics">7. Functions (The Basics)</a></li>
+<li><a href="#8-arrow-functions-deep-dive">8. Arrow Functions (Deep Dive)</a></li>
+<li><a href="#9-callbacks-and-higher-order-functions">9. Callbacks and Higher-Order Functions</a></li>
+<li><a href="#10-arrays-data-structures">10. Arrays (Data Structures)</a></li>
+<li><a href="#11-array-higher-order-functions">11. Array Higher-Order Functions</a></li>
+<li><a href="#12-introduction-to-the-dom-document-object-model">12. Introduction to the DOM (Document Object Model)</a></li>
+<li><a href="#13-deep-dive-queryselector-and-queryselectorall">13. Deep Dive: querySelector and querySelectorAll</a></li>
+<li><a href="#14-traditional-dom-querying-id-and-class-name">14. Traditional DOM Querying (ID and Class Name)</a></li>
+<li><a href="#15-event-listeners-and-the-event-object">15. Event Listeners and the Event Object</a></li>
+<li><a href="#16-creating-and-removing-elements-dynamically">16. Creating and Removing Elements Dynamically</a></li>
+<li><a href="#17-asynchronous-javascript-promises">17. Asynchronous JavaScript: Promises</a></li>
+<li><a href="#18-api-calling-and-async--await">18. API Calling and async / await</a></li>
+<li><a href="#19-web-storage-localstorage-and-sessionstorage">19. Web Storage (localStorage and sessionStorage)</a></li>
+<li><a href="#20-advanced-functions--functional-patterns">20. Advanced Functions &amp; Functional Patterns</a></li>
+</ul>
+<hr>
+<div style="page-break-before: always;"></div>
+# 1. Introduction to JavaScript (Full Stack Perspective)
+<p><strong>Theory:</strong> JavaScript (JS) is a high-level, interpreted programming language. In the context of Full Stack Web Development, JavaScript is unique because it is the <em>only</em> language that runs natively in the web browser (Frontend) and can also run on the server (Backend) using environments like Node.js.</p>
+<ul>
+<li><strong>Frontend (The Client):</strong> JS adds interactivity to websites. If HTML is the skeleton and CSS is the skin/clothing, JavaScript is the muscles and nervous system (handling clicks, fetching data, updating the screen dynamically).</li>
+<li><strong>Backend (The Server):</strong> Using Node.js, JS handles database connections, user authentication, and API creation.</li>
+</ul>
+<p><strong>Key Characteristics:</strong></p>
+<ul>
+<li><strong>Dynamically Typed:</strong> You don't have to declare a variable's type (e.g., integer, string) explicitly.</li>
+<li><strong>Single-Threaded &amp; Non-Blocking:</strong> It does one thing at a time but can offload heavy tasks (like database queries) to the background, keeping the application responsive.</li>
+</ul>
+<hr>
+<h3 id="how-to-run-javascript">How to Run JavaScript</h3>
+<p>Depending on where you are working in the stack, JS is executed differently.</p>
+<h4 id="1-in-the-browser-frontend">1. In the Browser (Frontend)</h4>
+<p>You connect a JavaScript file to your HTML document using the <code>&lt;script&gt;</code> tag. Place it just before the closing <code>&lt;/body&gt;</code> tag so the HTML loads first.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>My Full Stack App<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Hello World<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+    
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"app.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</div></code></pre>
+<h2 id="11-the-frontend-javascript-in-the-browser">1.1 The Frontend: JavaScript in the Browser</h2>
+<p>When you visit a website, the server sends three main files to your browser: HTML, CSS, and JavaScript.</p>
+<ul>
+<li><strong>HTML:</strong> The structure (text, images, buttons).</li>
+<li><strong>CSS:</strong> The design (colors, layouts, fonts).</li>
+<li><strong>JavaScript:</strong> The behavior (what happens when you click a button, fetching new data without reloading the page, animations).</li>
+</ul>
+<p><strong>How it works:</strong> Every modern browser (Chrome, Firefox, Safari) has a built-in &quot;JavaScript Engine.&quot; For example, Google Chrome uses the <strong>V8 Engine</strong>. This engine takes the human-readable JS code you write and compiles it into machine code that your computer can understand on the fly.</p>
+<blockquote>
+<p><strong>Key Concept: The DOM</strong>
+In the browser, JS has access to the <strong>DOM (Document Object Model)</strong>. The DOM is essentially an object-oriented representation of your HTML. JS uses the DOM to change the page dynamically.</p>
+</blockquote>
+<hr>
+<h2 id="12-the-backend-why-we-need-nodejs">1.2 The Backend: Why We Need Node.js</h2>
+<p>For a long time, JavaScript was &quot;trapped&quot; inside the web browser. If you wanted to build a server or talk to a database, you had to learn a completely different language like PHP, Python, Java, or Ruby.</p>
+<p><strong>The Node.js Revolution:</strong>
+In 2009, a developer named Ryan Dahl took the <strong>V8 Engine</strong> out of Google Chrome and embedded it inside a C++ program called <strong>Node.js</strong>.</p>
+<p><strong>What is Node.js?</strong>
+Node.js is <strong>not</strong> a programming language, and it is <strong>not</strong> a framework. It is a <strong>Runtime Environment</strong>. It allows you to run JavaScript directly on your computer's operating system or a server, completely independent of a web browser.</p>
+<p><strong>Why Node.js is powerful for Full Stack:</strong></p>
+<ol>
+<li><strong>JavaScript Everywhere:</strong> You can write both your frontend user interface (e.g., React, Vue) and your backend API (e.g., Express.js) using the exact same language. This drastically speeds up development.</li>
+<li><strong>Non-Blocking I/O:</strong> Traditional server languages often handle requests linearly (waiting for one database query to finish before moving to the next). Node.js is asynchronous. It can handle thousands of simultaneous requests (like reading files or querying databases) in the background without freezing, making it incredibly fast for web applications.</li>
+</ol>
+<hr>
+<h2 id="13-ecmascript-vs-javascript">1.3 ECMAScript vs. JavaScript</h2>
+<p>As you read documentation, you will constantly see the terms &quot;ES6&quot; or &quot;ECMAScript.&quot;</p>
+<ul>
+<li><strong>ECMAScript:</strong> This is the official <em>rulebook</em> or standard for the language.</li>
+<li><strong>JavaScript:</strong> This is the actual language that <em>implements</em> those rules.</li>
+<li><strong>ES6 (ECMAScript 2015):</strong> This was a massive update to the language that introduced modern features you will use daily (arrow functions, classes, <code>let</code>/<code>const</code>, promises).</li>
+</ul>
+<hr>
+<h2 id="14-syntax-and-environments-a-side-by-side-comparison">1.4 Syntax and Environments: A Side-by-Side Comparison</h2>
+<p>Because JS runs in two places, certain features only exist in their specific environment.</p>
+<h3 id="frontend-example-browser-environment">Frontend Example (Browser Environment)</h3>
+<p>You link this file to your HTML. It has access to the <code>window</code> and <code>document</code> objects.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// frontend.js</span>
+
+<span class="hljs-comment">// 1. Core JS (Works everywhere)</span>
+<span class="hljs-keyword">const</span> greeting = <span class="hljs-string">"Hello User"</span>;
+
+<span class="hljs-comment">// 2. Browser API (Only works in the browser!)</span>
+<span class="hljs-comment">// This alerts the user and changes the HTML text</span>
+<span class="hljs-built_in">window</span>.alert(<span class="hljs-string">"Welcome to the app!"</span>); 
+<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'title'</span>).innerText = greeting;
+
+<span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> If you run this file in Node.js, it will crash because </span>
+<span class="hljs-comment">// Node has no concept of a 'window' or a 'document'.</span>
+
+</div></code></pre>
+<h1 id="2-variables-scope-and-hoisting">2. Variables, Scope, and Hoisting</h1>
+<p>Before ES6 (2015), JavaScript only had one way to declare variables: <code>var</code>. This led to a lot of unpredictable bugs. Modern JavaScript introduced <code>let</code> and <code>const</code> to fix these issues. To understand <em>why</em> <code>var</code> is bad and <code>let/const</code> are good, we must understand Scope and Hoisting.</p>
+<hr>
+<h2 id="21-variables-var-let-const">2.1 Variables (<code>var</code>, <code>let</code>, <code>const</code>)</h2>
+<p><strong>Theory:</strong> Variables are containers for storing data values. In modern Full Stack development, you will almost exclusively use <code>const</code> and <code>let</code>.</p>
+<ul>
+<li><strong><code>const</code> (Constant):</strong> The variable cannot be reassigned to a new value.</li>
+<li><strong><code>let</code>:</strong> The variable can be reassigned later.</li>
+<li><strong><code>var</code>:</strong> The legacy way of declaring variables. Avoid using it in modern code.</li>
+</ul>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> myName = <span class="hljs-string">"Alice"</span>;
+<span class="hljs-keyword">let</span> age = <span class="hljs-number">25</span>;
+<span class="hljs-keyword">var</span> legacyVariable = <span class="hljs-string">"Don't use me"</span>;
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Using const</span>
+<span class="hljs-keyword">const</span> API_URL = <span class="hljs-string">"[https://api.mywebsite.com/data](https://api.mywebsite.com/data)"</span>;
+<span class="hljs-comment">// API_URL = "[https://newapi.com](https://newapi.com)"; // ERROR! You cannot reassign a const.</span>
+
+<span class="hljs-comment">// Using let</span>
+<span class="hljs-keyword">let</span> userScore = <span class="hljs-number">0</span>;
+userScore = <span class="hljs-number">10</span>; <span class="hljs-comment">// This is perfectly fine. userScore is now 10.</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; Always default to using <code>const</code>. Only switch to <code>let</code> if you know exactly why that variable's value needs to change in the future (like a counter in a loop). This makes your code much more predictable.</p>
+</blockquote>
+<hr>
+<h2 id="22-scope">2.2 Scope</h2>
+<p><strong>Theory:</strong> Scope determines the accessibility (visibility) of variables. If you declare a variable in one part of your code, can another part of your code see it?</p>
+<p>JavaScript has three main types of scope:</p>
+<ol>
+<li><strong>Global Scope:</strong> Declared outside any function or block. Accessible from <em>anywhere</em> in the file.</li>
+<li><strong>Function Scope:</strong> Declared inside a function. Only accessible <em>inside</em> that function.</li>
+<li><strong>Block Scope (ES6):</strong> Declared inside a <code>{}</code> block (like an <code>if</code> statement or <code>for</code> loop). Only accessible <em>inside</em> that block. <strong>Only <code>let</code> and <code>const</code> respect block scope. <code>var</code> ignores it.</strong></li>
+</ol>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Global Scope</span>
+<span class="hljs-keyword">const</span> globalVar = <span class="hljs-string">"I am everywhere"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">testScope</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// 2. Function Scope</span>
+    <span class="hljs-keyword">const</span> functionVar = <span class="hljs-string">"I am trapped in the function"</span>;
+    <span class="hljs-built_in">console</span>.log(globalVar); <span class="hljs-comment">// Works!</span>
+}
+<span class="hljs-comment">// console.log(functionVar); // ERROR! functionVar is not defined outside the function.</span>
+
+<span class="hljs-comment">// 3. Block Scope</span>
+<span class="hljs-keyword">if</span> (<span class="hljs-literal">true</span>) {
+    <span class="hljs-keyword">let</span> blockVar = <span class="hljs-string">"I am trapped in the if-statement"</span>;
+    <span class="hljs-keyword">var</span> sneakyVar = <span class="hljs-string">"I escape the block!"</span>;
+}
+
+<span class="hljs-comment">// console.log(blockVar); // ERROR! blockVar is block-scoped.</span>
+<span class="hljs-built_in">console</span>.log(sneakyVar); <span class="hljs-comment">// Works! 'var' ignores the {} block. This causes terrible bugs.</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; In Full Stack development, avoid Global variables whenever possible. On a Node.js server, polluting the global scope can cause data from one user's request to leak into another user's request, creating severe security vulnerabilities.</p>
+</blockquote>
+<hr>
+<h2 id="23-hoisting">2.3 Hoisting</h2>
+<p><strong>Theory:</strong> Hoisting is JavaScript's default behavior of moving declarations to the top of the current scope <em>before</em> code execution.</p>
+<p>When the JS engine reads your file, it does a quick first pass. It finds all your variable and function <em>declarations</em> and &quot;hoists&quot; them to the top of memory. However, it handles <code>var</code>, <code>let</code>/<code>const</code>, and functions very differently.</p>
+<ul>
+<li><strong>Functions:</strong> Fully hoisted. You can call a function before you write it.</li>
+<li><strong><code>var</code>:</strong> Hoisted, but initialized with a value of <code>undefined</code>.</li>
+<li><strong><code>let</code> &amp; <code>const</code>:</strong> Hoisted, but placed in a &quot;Temporal Dead Zone&quot; (TDZ). You cannot access them before the line they are actually written on.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Function Hoisting (Works)</span>
+sayHello(); <span class="hljs-comment">// Output: "Hello!"</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sayHello</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Hello!"</span>);
+}
+
+<span class="hljs-comment">// 2. 'var' Hoisting (Returns undefined instead of an error)</span>
+<span class="hljs-built_in">console</span>.log(oldScore); <span class="hljs-comment">// Output: undefined</span>
+<span class="hljs-keyword">var</span> oldScore = <span class="hljs-number">100</span>;
+
+<span class="hljs-comment">// 3. 'let' / 'const' Hoisting (Throws an error - Temporal Dead Zone)</span>
+<span class="hljs-built_in">console</span>.log(newScore); <span class="hljs-comment">// ERROR! Cannot access 'newScore' before initialization</span>
+<span class="hljs-keyword">let</span> newScore = <span class="hljs-number">100</span>;
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong>
+Interviewers love asking about hoisting. Remember: <code>let</code> and <code>const</code> are hoisted (the engine knows they exist), but they remain uninitialized in the <em>Temporal Dead Zone</em> until the execution reaches their line of code.</p>
+</blockquote>
+<pre class="hljs"><code><div>
+</div></code></pre>
+<h1 id="3-data-types-operators-and-type-conversion">3. Data Types, Operators, and Type Conversion</h1>
+<p>JavaScript is a <strong>dynamically typed</strong> language. This means you do not have to explicitly tell JS what kind of data a variable holds (unlike Java or C++). The JS engine figures it out automatically when the code runs.</p>
+<hr>
+<h2 id="31-data-types-primitives-vs-references">3.1 Data Types (Primitives vs. References)</h2>
+<p><strong>Theory:</strong> In JavaScript, data is split into two major categories based on how it is stored in the computer's memory: <strong>Primitives</strong> and <strong>Reference Types</strong>.</p>
+<h3 id="1-primitive-types-stored-by-value">1. Primitive Types (Stored by Value)</h3>
+<p>Primitives are basic data types. They are stored directly in the &quot;Stack&quot; memory, meaning they are fast to access and immutable (the actual value cannot be altered, only replaced).</p>
+<ul>
+<li><strong><code>String</code>:</strong> Text data, wrapped in quotes (<code>&quot;&quot;</code>, <code>''</code>, or backticks <code>``</code>).</li>
+<li><strong><code>Number</code>:</strong> Integers and decimals (e.g., <code>42</code>, <code>3.14</code>).</li>
+<li><strong><code>Boolean</code>:</strong> Logical entities (<code>true</code> or <code>false</code>).</li>
+<li><strong><code>Undefined</code>:</strong> A variable that has been declared but not assigned a value yet.</li>
+<li><strong><code>Null</code>:</strong> Intentional absence of any object value (you explicitly set this).</li>
+<li><strong><code>Symbol</code> (ES6):</strong> Unique identifiers (rarely used in basic web dev).</li>
+<li><strong><code>BigInt</code> (ES2020):</strong> For massively large numbers beyond the safe integer limit.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> username = <span class="hljs-string">"JohnDoe"</span>; <span class="hljs-comment">// String</span>
+<span class="hljs-keyword">let</span> age = <span class="hljs-number">30</span>;             <span class="hljs-comment">// Number</span>
+<span class="hljs-keyword">let</span> isAuthenticated = <span class="hljs-literal">true</span>; <span class="hljs-comment">// Boolean</span>
+<span class="hljs-keyword">let</span> userToken;            <span class="hljs-comment">// Undefined (JS sets this automatically)</span>
+<span class="hljs-keyword">let</span> userProfile = <span class="hljs-literal">null</span>;   <span class="hljs-comment">// Null (You set this to clear data)</span>
+
+</div></code></pre>
+<h3 id="2-reference-types-stored-by-reference">2. Reference Types (Stored by Reference)</h3>
+<p>Objects, Arrays, and Functions are Reference Types. Because they can be massive, they are stored in the &quot;Heap&quot; memory. The variable merely holds a <em>pointer</em> (or reference) to that location in memory.</p>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> user = { <span class="hljs-attr">name</span>: <span class="hljs-string">"Alice"</span>, <span class="hljs-attr">role</span>: <span class="hljs-string">"Admin"</span> }; <span class="hljs-comment">// Object</span>
+<span class="hljs-keyword">let</span> scores = [<span class="hljs-number">95</span>, <span class="hljs-number">80</span>, <span class="hljs-number">100</span>];                  <span class="hljs-comment">// Array</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; Because Reference types point to a memory location, copying them can be tricky.
+<code>let arr1 = [1, 2, 3];</code>
+<code>let arr2 = arr1;</code>
+<code>arr2.push(4);</code>
+If you log <code>arr1</code>, it will <em>also</em> have the <code>4</code>! You didn't create a new array; you just created two variables pointing to the exact same memory address.</p>
+</blockquote>
+<hr>
+<h2 id="32-operators">3.2 Operators</h2>
+<p><strong>Theory:</strong> Operators allow you to manipulate values, perform math, and compare data.</p>
+<h3 id="1-arithmetic--assignment-operators">1. Arithmetic &amp; Assignment Operators</h3>
+<p>Standard math operations (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> for remainder/modulo, <code>**</code> for exponentiation).
+Assignment operators assign values (<code>=</code>, <code>+=</code>, <code>-=</code>).</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> count = <span class="hljs-number">10</span>;
+count += <span class="hljs-number">5</span>; <span class="hljs-comment">// Same as count = count + 5; (count is now 15)</span>
+<span class="hljs-keyword">let</span> isEven = <span class="hljs-number">10</span> % <span class="hljs-number">2</span> === <span class="hljs-number">0</span>; <span class="hljs-comment">// Modulo is heavily used to find even/odd numbers</span>
+
+</div></code></pre>
+<h3 id="2-comparison-operators--vs">2. Comparison Operators (<code>==</code> vs <code>===</code>)</h3>
+<p>This is arguably the most important operator rule in JS.</p>
+<ul>
+<li><strong><code>==</code> (Loose Equality):</strong> Checks if the <em>values</em> are the same, but it will try to convert the types to match first.</li>
+<li><strong><code>===</code> (Strict Equality):</strong> Checks if the <em>values</em> AND the <em>data types</em> are exactly the same.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-built_in">console</span>.log(<span class="hljs-number">5</span> == <span class="hljs-string">"5"</span>);  <span class="hljs-comment">// true (JS converts the string "5" to a number first)</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-number">5</span> === <span class="hljs-string">"5"</span>); <span class="hljs-comment">// false (Number does not equal String)</span>
+
+</div></code></pre>
+<h3 id="3-logical-operators">3. Logical Operators (<code>&amp;&amp;</code>, <code>||</code>, <code>!</code>)</h3>
+<p>Used to combine multiple conditions. Heavy usage in React for conditional rendering!</p>
+<ul>
+<li><strong><code>&amp;&amp;</code> (AND):</strong> Both sides must be true.</li>
+<li><strong><code>||</code> (OR):</strong> At least one side must be true.</li>
+<li><strong><code>!</code> (NOT):</strong> Reverses the boolean value.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> isLoggedIn = <span class="hljs-literal">true</span>;
+<span class="hljs-keyword">let</span> hasPaid = <span class="hljs-literal">false</span>;
+
+<span class="hljs-built_in">console</span>.log(isLoggedIn &amp;&amp; hasPaid); <span class="hljs-comment">// false</span>
+<span class="hljs-built_in">console</span>.log(isLoggedIn || hasPaid); <span class="hljs-comment">// true</span>
+<span class="hljs-built_in">console</span>.log(!isLoggedIn);           <span class="hljs-comment">// false</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; In modern Full Stack dev, **ALWAYS use <code>===</code> and <code>!==**</code>. Using loose equality (<code>==</code>) is considered bad practice because it leads to unpredictable bugs where strings and numbers accidentally match.</p>
+</blockquote>
+<hr>
+<h2 id="33-type-conversion--coercion">3.3 Type Conversion &amp; Coercion</h2>
+<p><strong>Theory:</strong> Often, you need to change data from one type to another (e.g., taking a user's age from an HTML input, which is always a String, and converting it to a Number to do math).</p>
+<h3 id="1-explicit-conversion-type-casting">1. Explicit Conversion (Type Casting)</h3>
+<p>This is when <em>you</em> manually force a type change using built-in JS functions.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> stringAge = <span class="hljs-string">"25"</span>;
+<span class="hljs-keyword">let</span> realAge = <span class="hljs-built_in">Number</span>(stringAge); <span class="hljs-comment">// Explicitly converts to 25 (Number)</span>
+<span class="hljs-keyword">let</span> str = <span class="hljs-built_in">String</span>(<span class="hljs-number">100</span>);           <span class="hljs-comment">// Explicitly converts to "100" (String)</span>
+
+</div></code></pre>
+<h3 id="2-implicit-conversion-type-coercion">2. Implicit Conversion (Type Coercion)</h3>
+<p>This is when the JavaScript engine changes the type automatically behind the scenes. The <code>+</code> operator triggers string concatenation if any string is involved, but <code>-</code>, <code>*</code>, and <code>/</code> trigger math operations.</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">console</span>.log(<span class="hljs-string">"5"</span> + <span class="hljs-number">2</span>); <span class="hljs-comment">// "52" (Number 2 is coerced into a String)</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"5"</span> - <span class="hljs-number">2</span>); <span class="hljs-comment">// 3 (String "5" is coerced into a Number)</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"5"</span> * <span class="hljs-string">"2"</span>); <span class="hljs-comment">// 10 (Both coerced to Numbers)</span>
+
+</div></code></pre>
+<h3 id="3-truthy-and-falsy-values">3. Truthy and Falsy Values</h3>
+<p>In JavaScript, every single value inherently translates to a boolean (<code>true</code> or <code>false</code>) when evaluated in a logical context (like an <code>if</code> statement).</p>
+<p><strong>Falsy Values (Memorize these! Everything else is Truthy):</strong></p>
+<ol>
+<li><code>false</code></li>
+<li><code>0</code></li>
+<li><code>&quot;&quot;</code> (Empty string)</li>
+<li><code>null</code></li>
+<li><code>undefined</code></li>
+<li><code>NaN</code> (Not a Number)</li>
+</ol>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> userCart = []; <span class="hljs-comment">// An empty array is TRUTHY!</span>
+<span class="hljs-keyword">let</span> username = <span class="hljs-string">""</span>; <span class="hljs-comment">// An empty string is FALSY!</span>
+
+<span class="hljs-keyword">if</span> (username) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Welcome "</span> + username);
+} <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Please enter a name."</span>); <span class="hljs-comment">// This will run because "" is falsy.</span>
+}
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; A common Full Stack bug occurs when fetching data from an API. If the API fails and returns <code>undefined</code>, and you try to render it on the frontend without checking if it's truthy/falsy first, your application will crash.</p>
+</blockquote>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="4-control-flow-conditionals-and-switch-statements">4. Control Flow: Conditionals and Switch Statements</h1>
+<p><strong>Theory:</strong> By default, JavaScript reads your code top-to-bottom, executing every single line. &quot;Control Flow&quot; allows you to break this linear path. You use conditional statements to tell the JavaScript engine to make decisions: &quot;If <em>this</em> condition is true, run this block of code. Otherwise, run <em>that</em> block of code.&quot;</p>
+<hr>
+<h2 id="41-the-if-else-if-and-else-statements">4.1 The <code>if</code>, <code>else if</code>, and <code>else</code> Statements</h2>
+<p><strong>Theory:</strong> This is the most common way to handle logic. You evaluate a condition (which JS will implicitly convert to a boolean: <code>true</code> or <code>false</code>), and execute code based on the result.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">if</span> (condition1) {
+    <span class="hljs-comment">// Runs if condition1 is true</span>
+} <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (condition2) {
+    <span class="hljs-comment">// Runs if condition1 is false AND condition2 is true</span>
+} <span class="hljs-keyword">else</span> {
+    <span class="hljs-comment">// Runs if ALL previous conditions are false</span>
+}
+
+</div></code></pre>
+<p><strong>Example (Full Stack Context - Authentication):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> userRole = <span class="hljs-string">"editor"</span>;
+<span class="hljs-keyword">const</span> isLoggedIn = <span class="hljs-literal">true</span>;
+
+<span class="hljs-keyword">if</span> (!isLoggedIn) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Redirecting to login page..."</span>);
+} <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (userRole === <span class="hljs-string">"admin"</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Access granted to Admin Dashboard. You can delete users."</span>);
+} <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (userRole === <span class="hljs-string">"editor"</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Access granted. You can write and edit posts."</span>);
+} <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Access denied. Insufficient permissions."</span>);
+}
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; Do not over-nest your <code>if</code> statements (often called the &quot;Pyramid of Doom&quot;). If you find yourself writing <code>if</code> statements inside <code>if</code> statements inside <code>if</code> statements, it makes your code incredibly hard to read. Look into &quot;Guard Clauses&quot; (returning early from a function) to keep your code flat and clean.</p>
+</blockquote>
+<hr>
+<h2 id="42-the-ternary-operator-the-one-line-ifelse">4.2 The Ternary Operator (The One-Line <code>if/else</code>)</h2>
+<p><strong>Theory:</strong> The ternary operator is a shortcut for an <code>if/else</code> statement. If you are going into Full Stack development (especially using React), you <strong>must</strong> memorize this. React heavily relies on the ternary operator to conditionally render HTML based on state.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div>condition ? expressionIfTrue : expressionIfFalse;
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> age = <span class="hljs-number">20</span>;
+
+<span class="hljs-comment">// The old way (if/else)</span>
+<span class="hljs-keyword">let</span> drinkChoice;
+<span class="hljs-keyword">if</span> (age &gt;= <span class="hljs-number">21</span>) {
+    drinkChoice = <span class="hljs-string">"Beer"</span>;
+} <span class="hljs-keyword">else</span> {
+    drinkChoice = <span class="hljs-string">"Juice"</span>;
+}
+
+<span class="hljs-comment">// The modern, concise way (Ternary)</span>
+<span class="hljs-keyword">let</span> modernDrinkChoice = age &gt;= <span class="hljs-number">21</span> ? <span class="hljs-string">"Beer"</span> : <span class="hljs-string">"Juice"</span>;
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`You get a <span class="hljs-subst">${modernDrinkChoice}</span>`</span>);
+
+</div></code></pre>
+<hr>
+<h2 id="43-the-switch-statement">4.3 The <code>switch</code> Statement</h2>
+<p><strong>Theory:</strong> When you have a single variable that you want to check against many specific, discrete values, a <code>switch</code> statement is cleaner and often slightly faster than a long chain of <code>else if</code> statements.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">switch</span> (expression) {
+    <span class="hljs-keyword">case</span> value1:
+        <span class="hljs-comment">// Code to run</span>
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> value2:
+        <span class="hljs-comment">// Code to run</span>
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">default</span>:
+        <span class="hljs-comment">// Runs if no cases match (like an 'else')</span>
+}
+
+</div></code></pre>
+<p><strong>Example (Full Stack Context - Handling API Responses):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> httpStatusCode = <span class="hljs-number">404</span>;
+
+<span class="hljs-keyword">switch</span> (httpStatusCode) {
+    <span class="hljs-keyword">case</span> <span class="hljs-number">200</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Success! Data fetched from database."</span>);
+        <span class="hljs-keyword">break</span>; <span class="hljs-comment">// Stops the switch from continuing to the next case</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-number">201</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Created! New user added to the database."</span>);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> <span class="hljs-number">400</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Bad Request! The data you sent is invalid."</span>);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> <span class="hljs-number">401</span>:
+    <span class="hljs-keyword">case</span> <span class="hljs-number">403</span>: <span class="hljs-comment">// You can stack cases to share the same outcome!</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Unauthorized! Please log in."</span>);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> <span class="hljs-number">404</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Not Found! That page doesn't exist."</span>);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> <span class="hljs-number">500</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Server Error! Our backend crashed."</span>);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">default</span>:
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Unknown status code received."</span>);
+}
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong>
+<strong>Never forget the <code>break</code> keyword!</strong> If you forget it, JavaScript will execute the matching case, and then <em>fall through</em> and execute every single case below it, regardless of whether they match or not. This is a notorious source of bugs.
+<em>Note: You don't need a <code>break</code> on the <code>default</code> case because it's at the very end.</em></p>
+</blockquote>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="5-logical-operators--short-circuiting">5. Logical Operators &amp; Short-Circuiting</h1>
+<p><strong>Theory:</strong> Logical operators are used to combine multiple conditions or to flip the boolean value of a condition. However, in JavaScript, they do more than just return <code>true</code> or <code>false</code>—they can actually return the underlying values themselves, a feature known as &quot;short-circuiting.&quot;</p>
+<hr>
+<h2 id="51-the-core-logical-operators">5.1 The Core Logical Operators</h2>
+<h3 id="1-logical-and">1. Logical AND (<code>&amp;&amp;</code>)</h3>
+<ul>
+<li><strong>Rule:</strong> Returns <code>true</code> ONLY if <strong>both</strong> sides are true. If the first side is false, it immediately stops and returns false.</li>
+<li><strong>Full Stack Use Case:</strong> Checking if a user exists AND has the correct password.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> isUserLoggedIn = <span class="hljs-literal">true</span>;
+<span class="hljs-keyword">let</span> hasAdminRights = <span class="hljs-literal">false</span>;
+
+<span class="hljs-keyword">if</span> (isUserLoggedIn &amp;&amp; hasAdminRights) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Welcome to the Admin Dashboard."</span>);
+} <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Access Denied."</span>); <span class="hljs-comment">// This will run.</span>
+}
+
+</div></code></pre>
+<h3 id="2-logical-or">2. Logical OR (<code>||</code>)</h3>
+<ul>
+<li><strong>Rule:</strong> Returns <code>true</code> if <strong>at least one</strong> side is true. If the first side is true, it immediately stops and returns true without even checking the second side.</li>
+<li><strong>Full Stack Use Case:</strong> Giving a user a default avatar if they haven't uploaded one.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> userPlan = <span class="hljs-string">"Free"</span>;
+<span class="hljs-keyword">let</span> isTrialActive = <span class="hljs-literal">true</span>;
+
+<span class="hljs-keyword">if</span> (userPlan === <span class="hljs-string">"Pro"</span> || isTrialActive) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"You can use premium features."</span>); <span class="hljs-comment">// This will run.</span>
+}
+
+</div></code></pre>
+<h3 id="3-logical-not">3. Logical NOT (<code>!</code>)</h3>
+<ul>
+<li><strong>Rule:</strong> Reverses the boolean state. <code>true</code> becomes <code>false</code>, and <code>false</code> becomes <code>true</code>.</li>
+<li><strong>Pro-Tip (<code>!!</code>):</strong> Using a double bang <code>!!</code> is a quick way to forcefully convert any value into a pure boolean.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> isLoading = <span class="hljs-literal">false</span>;
+
+<span class="hljs-keyword">if</span> (!isLoading) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Data finished loading! Show the UI."</span>); <span class="hljs-comment">// This will run.</span>
+}
+
+<span class="hljs-comment">// Double NOT trick</span>
+<span class="hljs-built_in">console</span>.log(!!<span class="hljs-string">"hello"</span>); <span class="hljs-comment">// true (converts truthy string to boolean true)</span>
+<span class="hljs-built_in">console</span>.log(!!<span class="hljs-number">0</span>);       <span class="hljs-comment">// false (converts falsy 0 to boolean false)</span>
+
+</div></code></pre>
+<hr>
+<h2 id="52-short-circuit-evaluation-crucial-for-react">5.2 Short-Circuit Evaluation (Crucial for React!)</h2>
+<p><strong>Theory:</strong> JavaScript logical operators evaluate from left to right. When using <code>&amp;&amp;</code> and <code>||</code>, JS doesn't always return <code>true</code> or <code>false</code>. It actually returns the <strong>value</strong> that stopped the evaluation.</p>
+<ul>
+<li><strong><code>&amp;&amp;</code> (AND) Short-Circuit:</strong> Returns the <em>first falsy</em> value it finds. If everything is truthy, it returns the <em>last</em> value.</li>
+<li><strong><code>||</code> (OR) Short-Circuit:</strong> Returns the <em>first truthy</em> value it finds. If everything is falsy, it returns the <em>last</em> value.</li>
+</ul>
+<p><strong>Example (React &amp; Frontend focus):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Using &amp;&amp; to conditionally render UI</span>
+<span class="hljs-keyword">let</span> unreadMessages = <span class="hljs-number">5</span>;
+
+<span class="hljs-comment">// If unreadMessages &gt; 0 is true, it returns the right side ("You have mail!")</span>
+<span class="hljs-comment">// In React, this is how you hide/show components dynamically.</span>
+<span class="hljs-keyword">let</span> notification = (unreadMessages &gt; <span class="hljs-number">0</span>) &amp;&amp; <span class="hljs-string">"You have mail!"</span>; 
+<span class="hljs-built_in">console</span>.log(notification); <span class="hljs-comment">// "You have mail!"</span>
+
+<span class="hljs-comment">// Using || to set default values</span>
+<span class="hljs-keyword">let</span> userProvidedName = <span class="hljs-string">""</span>; <span class="hljs-comment">// User left the input blank (falsy)</span>
+<span class="hljs-keyword">let</span> defaultName = <span class="hljs-string">"Guest"</span>;
+
+<span class="hljs-comment">// JS sees "" is falsy, so it moves to "Guest", which is truthy, and returns it.</span>
+<span class="hljs-keyword">let</span> displayName = userProvidedName || defaultName;
+<span class="hljs-built_in">console</span>.log(displayName); <span class="hljs-comment">// "Guest"</span>
+
+</div></code></pre>
+<hr>
+<h2 id="53-nullish-coalescing-operator----es2020">5.3 Nullish Coalescing Operator (<code>??</code>) - ES2020</h2>
+<p><strong>Theory:</strong> The <code>||</code> operator has a flaw: it treats <em>all</em> falsy values (like <code>0</code> or <code>&quot;&quot;</code>) as failures. But what if a user's score is actually <code>0</code>? You don't want to accidentally overwrite their score with a default value just because <code>0</code> is falsy.</p>
+<p>The <code>??</code> operator fixes this. It only short-circuits if the first value is **strictly <code>null</code> or <code>undefined**</code>. It ignores other falsy values like <code>0</code> or <code>&quot;&quot;</code>.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> result = leftSide ?? rightSide;
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> playerHPSettings = <span class="hljs-number">0</span>; <span class="hljs-comment">// The player has 0 Health Points</span>
+
+<span class="hljs-comment">// Using OR (||) - Creates a bug!</span>
+<span class="hljs-keyword">let</span> hp1 = playerHPSettings || <span class="hljs-number">100</span>; 
+<span class="hljs-built_in">console</span>.log(hp1); <span class="hljs-comment">// 100. (Bug: JS saw 0 as falsy and gave them 100 HP)</span>
+
+<span class="hljs-comment">// Using Nullish Coalescing (??) - Works perfectly!</span>
+<span class="hljs-keyword">let</span> hp2 = playerHPSettings ?? <span class="hljs-number">100</span>;
+<span class="hljs-built_in">console</span>.log(hp2); <span class="hljs-comment">// 0. (JS says: "It's 0, but it's not null/undefined, so keep the 0")</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; When configuring Node.js servers or handling API data, favor <code>??</code> over <code>||</code> if <code>0</code> or an empty string <code>&quot;&quot;</code> are valid pieces of data you want to keep. Only use <code>||</code> if you genuinely want to reject <em>all</em> falsy values.</p>
+</blockquote>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="6-loops-and-iteration">6. Loops and Iteration</h1>
+<p><strong>Theory:</strong> Loops are used to execute the same block of code repeatedly as long as a specific condition is true. They are the backbone of the <strong>DRY (Don't Repeat Yourself)</strong> principle. Instead of writing <code>console.log()</code> 100 times, you write it once inside a loop.</p>
+<hr>
+<h2 id="61-the-standard-for-loop">6.1 The Standard <code>for</code> Loop</h2>
+<p><strong>Theory:</strong> The <code>for</code> loop is the most common loop. You use it when you know <em>exactly</em> how many times you want the code to run.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">for</span> (initialization; condition; increment/decrement) {
+    <span class="hljs-comment">// Code to run on each iteration</span>
+}
+
+</div></code></pre>
+<p><strong>Example (Full Stack Context - Paginating Results):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> totalPages = <span class="hljs-number">5</span>;
+
+<span class="hljs-comment">// Starts at 1; runs as long as i is &lt;= 5; adds 1 to i after each loop</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt;= totalPages; i++) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Fetching data for Page <span class="hljs-subst">${i}</span>...`</span>);
+}
+<span class="hljs-comment">// Output: Fetches pages 1, 2, 3, 4, 5.</span>
+
+</div></code></pre>
+<hr>
+<h2 id="62-the-while-and-dowhile-loops">6.2 The <code>while</code> and <code>do...while</code> Loops</h2>
+<h3 id="1-the-while-loop">1. The <code>while</code> Loop</h3>
+<p><strong>Theory:</strong> Use a <code>while</code> loop when you <strong>do not know</strong> how many times the loop needs to run in advance. It continues to run as long as the condition evaluates to <code>true</code>.</p>
+<p><strong>Example (Full Stack Context - Backend processing):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> isDatabaseConnected = <span class="hljs-literal">false</span>;
+<span class="hljs-keyword">let</span> connectionAttempts = <span class="hljs-number">0</span>;
+
+<span class="hljs-keyword">while</span> (!isDatabaseConnected &amp;&amp; connectionAttempts &lt; <span class="hljs-number">3</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Attempting to connect to database..."</span>);
+    connectionAttempts++;
+    <span class="hljs-comment">// Imagine some code here that tries to connect and might set isDatabaseConnected = true</span>
+}
+
+</div></code></pre>
+<h3 id="2-the-dowhile-loop">2. The <code>do...while</code> Loop</h3>
+<p><strong>Theory:</strong> Almost identical to the <code>while</code> loop, but with one critical difference: <strong>it will always run at least once</strong>, even if the condition is false from the very beginning. This is because it executes the code block <em>before</em> checking the condition.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">let</span> userInput = <span class="hljs-string">""</span>;
+
+<span class="hljs-keyword">do</span> {
+    <span class="hljs-comment">// In a real app, this might be a prompt asking for a valid password</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Please enter your password."</span>); 
+    userInput = <span class="hljs-string">"password123"</span>; 
+} <span class="hljs-keyword">while</span> (userInput === <span class="hljs-string">""</span>); 
+
+</div></code></pre>
+<hr>
+<h2 id="63-modern-es6-loops-forof-and-forin">6.3 Modern ES6 Loops (<code>for...of</code> and <code>for...in</code>)</h2>
+<p>As a modern Full Stack developer, you will actually use these more often than the standard <code>for</code> loop when dealing with data structures.</p>
+<h3 id="1-forof-used-for-arrays-and-strings">1. <code>for...of</code> (Used for Arrays and Strings)</h3>
+<p>Iterates over the <strong>values</strong> of an iterable object (like an Array or a String).</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> shoppingCart = [<span class="hljs-string">"Laptop"</span>, <span class="hljs-string">"Mouse"</span>, <span class="hljs-string">"Keyboard"</span>];
+
+<span class="hljs-comment">// Much cleaner than a standard for loop!</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> item <span class="hljs-keyword">of</span> shoppingCart) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Processing item: <span class="hljs-subst">${item}</span>`</span>);
+}
+
+</div></code></pre>
+<h3 id="2-forin-used-for-objects">2. <code>for...in</code> (Used for Objects)</h3>
+<p>Iterates over the <strong>keys</strong> (property names) of an Object.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> userProfile = {
+    <span class="hljs-attr">username</span>: <span class="hljs-string">"dev_guru"</span>,
+    <span class="hljs-attr">role</span>: <span class="hljs-string">"Admin"</span>,
+    <span class="hljs-attr">status</span>: <span class="hljs-string">"Active"</span>
+};
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> userProfile) {
+    <span class="hljs-comment">// Accessing the key and the dynamically evaluated value</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${key}</span>: <span class="hljs-subst">${userProfile[key]}</span>`</span>); 
+}
+<span class="hljs-comment">// Output: </span>
+<span class="hljs-comment">// username: dev_guru</span>
+<span class="hljs-comment">// role: Admin</span>
+<span class="hljs-comment">// status: Active</span>
+
+</div></code></pre>
+<hr>
+<h2 id="64-loop-control-break-and-continue">6.4 Loop Control: <code>break</code> and <code>continue</code></h2>
+<p>Sometimes you need to prematurely alter the flow of a loop.</p>
+<ul>
+<li><strong><code>break</code>:</strong> Completely destroys the loop and stops it from running entirely.</li>
+<li><strong><code>continue</code>:</strong> Skips the <em>current</em> iteration and instantly moves to the next one.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> userIDs = [<span class="hljs-number">101</span>, <span class="hljs-number">102</span>, <span class="hljs-string">"ERROR"</span>, <span class="hljs-number">104</span>, <span class="hljs-number">105</span>];
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; userIDs.length; i++) {
+    <span class="hljs-keyword">if</span> (userIDs[i] === <span class="hljs-string">"ERROR"</span>) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Corrupted data found. Skipping..."</span>);
+        <span class="hljs-keyword">continue</span>; <span class="hljs-comment">// Skips "ERROR" but continues to 104</span>
+    }
+    
+    <span class="hljs-keyword">if</span> (userIDs[i] === <span class="hljs-number">104</span>) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Target user 104 found. Stopping search."</span>);
+        <span class="hljs-keyword">break</span>; <span class="hljs-comment">// Destroys the loop completely. 105 is never checked.</span>
+    }
+    
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Processing User ID: <span class="hljs-subst">${userIDs[i]}</span>`</span>);
+}
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong>
+<strong>Infinite Loops!</strong> If you create a <code>while</code> loop or a <code>for</code> loop where the condition <em>never</em> becomes false (e.g., you forget to increment your <code>i</code> variable), your program will run forever, ultimately freezing the user's browser or crashing your Node.js server. Always double-check your exit conditions!</p>
+</blockquote>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="7-functions-the-basics">7. Functions (The Basics)</h1>
+<p><strong>Theory:</strong> A function is a reusable block of code designed to perform a particular task. You can think of a function like a mini-machine: you put raw materials in (Inputs), the machine does some work (Code Execution), and it spits out a finished product (Output).</p>
+<hr>
+<h2 id="71-function-declarations-the-traditional-way">7.1 Function Declarations (The Traditional Way)</h2>
+<p><strong>Theory:</strong> This is the standard, oldest way to write a function in JavaScript. Because of &quot;hoisting&quot; (which we covered in section 2), function declarations are hoisted to the top of the file, meaning you can actually call them <em>before</em> you write them in your code.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">functionName</span>(<span class="hljs-params">parameters</span>) </span>{
+    <span class="hljs-comment">// Code to execute</span>
+    <span class="hljs-keyword">return</span> result;
+}
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Calling the function</span>
+<span class="hljs-keyword">const</span> myGreeting = sayHello(<span class="hljs-string">"Alice"</span>); 
+<span class="hljs-built_in">console</span>.log(myGreeting); <span class="hljs-comment">// Output: "Hello, Alice!"</span>
+
+<span class="hljs-comment">// Declaring the function</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sayHello</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`Hello, <span class="hljs-subst">${name}</span>!`</span>;
+}
+
+</div></code></pre>
+<hr>
+<h2 id="72-parameters-vs-arguments">7.2 Parameters vs. Arguments</h2>
+<p><strong>Theory:</strong> These two terms are constantly used interchangeably by mistake.</p>
+<ul>
+<li><strong>Parameters:</strong> The variable <em>placeholders</em> you write when you <strong>create</strong> the function.</li>
+<li><strong>Arguments:</strong> The actual <em>data values</em> you pass in when you <strong>call</strong> the function.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-comment">// 'num1' and 'num2' are PARAMETERS</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addNumbers</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+
+<span class="hljs-comment">// '5' and '10' are ARGUMENTS</span>
+addNumbers(<span class="hljs-number">5</span>, <span class="hljs-number">10</span>); 
+
+</div></code></pre>
+<hr>
+<h2 id="73-the-return-keyword">7.3 The <code>return</code> Keyword</h2>
+<p><strong>Theory:</strong> By default, if a function finishes running and doesn't have a <code>return</code> statement, it will output <code>undefined</code>. The <code>return</code> keyword is how a function hands data back to the rest of your program so you can use it.</p>
+<p><strong>Crucial Rule:</strong> The moment JavaScript hits a <code>return</code> keyword, the function <strong>stops executing immediately</strong>. Any code written below the <code>return</code> statement inside that function is completely ignored.</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkAge</span>(<span class="hljs-params">age</span>) </span>{
+    <span class="hljs-keyword">if</span> (age &gt;= <span class="hljs-number">18</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"You are an adult."</span>; 
+    }
+    
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"You are a minor."</span>;
+    
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"This will NEVER run because a return happened above it."</span>);
+}
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; Beginners often confuse <code>console.log()</code> with <code>return</code>.</p>
+<ul>
+<li><code>console.log()</code> just prints text to your screen for debugging. It does not give data back to the program.</li>
+<li><code>return</code> actually spits the data out so another variable or function can use it.</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="74-function-expressions">7.4 Function Expressions</h2>
+<p><strong>Theory:</strong> Because JavaScript treats functions like any other piece of data (like a string or a number), you can actually store a function inside a variable. This is called a Function Expression. Unlike Declarations, these are <strong>not</strong> hoisted, meaning you must write them before you call them.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> functionName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">parameters</span>) </span>{
+    <span class="hljs-comment">// Code to execute</span>
+};
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// calculateTotal(100, 0.2); // ERROR! Cannot access before initialization</span>
+
+<span class="hljs-keyword">const</span> calculateTotal = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">price, taxRate</span>) </span>{
+    <span class="hljs-keyword">const</span> tax = price * taxRate;
+    <span class="hljs-keyword">return</span> price + tax;
+};
+
+<span class="hljs-built_in">console</span>.log(calculateTotal(<span class="hljs-number">100</span>, <span class="hljs-number">0.2</span>)); <span class="hljs-comment">// Output: 120</span>
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="8-arrow-functions-deep-dive">8. Arrow Functions (Deep Dive)</h1>
+<p><strong>Theory:</strong> Introduced in ES6 (2015), Arrow Functions are not just a shorter way to write functions—they actually behave differently under the hood compared to traditional <code>function</code> declarations. They are the absolute standard for writing callbacks, array methods (<code>map</code>, <code>filter</code>), and React components.</p>
+<hr>
+<h2 id="81-syntax-variations">8.1 Syntax Variations</h2>
+<p>Arrow functions are highly flexible. Depending on how many parameters you have and what you are returning, you can shrink the syntax down significantly.</p>
+<h3 id="1-standard-arrow-function">1. Standard Arrow Function</h3>
+<p>If you have multiple parameters and multiple lines of code, you need parentheses <code>()</code> around the parameters, curly braces <code>{}</code> for the body, and a <code>return</code> keyword.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> calculateArea = <span class="hljs-function">(<span class="hljs-params">width, height</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> area = width * height;
+    <span class="hljs-keyword">return</span> area;
+};
+
+</div></code></pre>
+<h3 id="2-implicit-return-the-super-shortcut">2. Implicit Return (The Super Shortcut)</h3>
+<p>If your function only has <strong>one line of code</strong> that returns a value, you can delete the curly braces <code>{}</code> and the <code>return</code> keyword. The arrow <code>=&gt;</code> implicitly returns whatever is on the right side.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// This does the exact same thing as the function above!</span>
+<span class="hljs-keyword">const</span> calculateAreaShort = <span class="hljs-function">(<span class="hljs-params">width, height</span>) =&gt;</span> width * height;
+
+</div></code></pre>
+<h3 id="3-single-parameter-shortcut">3. Single Parameter Shortcut</h3>
+<p>If you have exactly <strong>one parameter</strong>, you can even omit the parentheses <code>()</code> around it. <em>(Note: Code formatters like Prettier often add them back automatically, but it's important to know this syntax exists).</em></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> squareNumber = <span class="hljs-function"><span class="hljs-params">num</span> =&gt;</span> num * num;
+<span class="hljs-built_in">console</span>.log(squareNumber(<span class="hljs-number">5</span>)); <span class="hljs-comment">// Output: 25</span>
+
+</div></code></pre>
+<h3 id="4-returning-an-object-implicitly">4. Returning an Object Implicitly</h3>
+<p>If you want to implicitly return a JavaScript Object, you <strong>must</strong> wrap the object's curly braces inside parentheses <code>()</code>. Otherwise, JS thinks the object's <code>{}</code> are the function's body block!</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// WRONG: JS thinks this is an empty function block with a syntax error</span>
+<span class="hljs-comment">// const getUser = (name) =&gt; { username: name, role: "Admin" }; </span>
+
+<span class="hljs-comment">// CORRECT: Wrap the object in ()</span>
+<span class="hljs-keyword">const</span> getUser = <span class="hljs-function">(<span class="hljs-params">name</span>) =&gt;</span> ({ <span class="hljs-attr">username</span>: name, <span class="hljs-attr">role</span>: <span class="hljs-string">"Admin"</span> });
+
+</div></code></pre>
+<hr>
+<h2 id="82-arrow-functions-vs-regular-functions-the-this-keyword">8.2 Arrow Functions vs. Regular Functions (The <code>this</code> Keyword)</h2>
+<p><strong>Theory:</strong> This is the #1 interview question regarding arrow functions.</p>
+<ul>
+<li>A <strong>regular function</strong> creates its own <code>this</code> context based on <em>how</em> the function is called.</li>
+<li>An <strong>arrow function</strong> does NOT create its own <code>this</code>. Instead, it inherits <code>this</code> from the parent scope surrounding it (this is called &quot;Lexical Scoping&quot;).</li>
+</ul>
+<p><strong>Example (Why Arrow Functions are great for Callbacks):</strong>
+Imagine an object representing a user, and a method that prints their name after a 1-second delay.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> userProfile = {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">"Alice"</span>,
+    
+    <span class="hljs-comment">// Using a Regular Function inside a callback (Creates a bug!)</span>
+    <span class="hljs-attr">printNameBad</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-comment">// In a regular function, 'this' loses its connection to 'userProfile' </span>
+            <span class="hljs-comment">// when it gets executed by setTimeout (it points to the global window/timeout object instead).</span>
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Bad: "</span> + <span class="hljs-keyword">this</span>.name); 
+        }, <span class="hljs-number">1000</span>);
+    },
+
+    <span class="hljs-comment">// Using an Arrow Function (Fixes the bug!)</span>
+    <span class="hljs-attr">printNameGood</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+            <span class="hljs-comment">// The arrow function doesn't have its own 'this'. </span>
+            <span class="hljs-comment">// It looks up and borrows 'this' from printNameGood, which points to userProfile!</span>
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Good: "</span> + <span class="hljs-keyword">this</span>.name);
+        }, <span class="hljs-number">1000</span>);
+    }
+};
+
+userProfile.printNameBad();  <span class="hljs-comment">// Output after 1 sec: "Bad: undefined"</span>
+userProfile.printNameGood(); <span class="hljs-comment">// Output after 1 sec: "Good: Alice"</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; Because Arrow Functions don't have their own <code>this</code>, <strong>never use them as Object Methods</strong> if that method needs to access properties on the object itself.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> car = {
+    <span class="hljs-attr">brand</span>: <span class="hljs-string">"Toyota"</span>,
+    <span class="hljs-comment">// DON'T DO THIS! 'this.brand' will be undefined.</span>
+    <span class="hljs-attr">getBrand</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">this</span>.brand) 
+};
+
+</div></code></pre>
+<p>Use regular functions for object methods, and arrow functions for callbacks inside them!</p>
+</blockquote>
+<hr>
+<h2 id="83-no-arguments-object">8.3 No <code>arguments</code> Object</h2>
+<p>Traditional functions have access to a hidden array-like object called <code>arguments</code> that holds all passed arguments. Arrow functions <strong>do not</strong> have this. If you need to accept an unlimited number of arguments in an arrow function, you must use the Rest operator (<code>...</code>).</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Modern Full Stack approach for unlimited arguments</span>
+<span class="hljs-keyword">const</span> sumAll = <span class="hljs-function">(<span class="hljs-params">...numbers</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> numbers.reduce(<span class="hljs-function">(<span class="hljs-params">total, num</span>) =&gt;</span> total + num, <span class="hljs-number">0</span>);
+};
+<span class="hljs-built_in">console</span>.log(sumAll(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>)); <span class="hljs-comment">// Output: 15</span>
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="9-callbacks-and-higher-order-functions">9. Callbacks and Higher-Order Functions</h1>
+<p><strong>Theory:</strong> In JavaScript, functions are <strong>&quot;First-Class Citizens&quot;</strong>. This means the JS engine treats functions exactly like any other piece of data (like a String or a Number). You can assign a function to a variable, store it in an array, pass it as an argument into another function, or even return a function from another function.</p>
+<p>This single feature is what makes Callbacks and Higher-Order Functions possible.</p>
+<hr>
+<h2 id="91-callback-functions">9.1 Callback Functions</h2>
+<p><strong>Theory:</strong> A Callback Function is simply a function that you pass into <em>another</em> function as an argument, with the intention that it will be executed (called back) at a later time.</p>
+<p>You don't execute the callback immediately yourself (no parentheses <code>()</code> when passing it). You hand the instructions over to the parent function to execute when it's ready.</p>
+<p><strong>Example 1: A Custom Synchronous Callback</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. We create two simple callback functions</span>
+<span class="hljs-keyword">const</span> add = <span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> a + b;
+<span class="hljs-keyword">const</span> multiply = <span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> a * b;
+
+<span class="hljs-comment">// 2. We create a parent function that ACCEPTS a callback</span>
+<span class="hljs-keyword">const</span> calculate = <span class="hljs-function">(<span class="hljs-params">num1, num2, operationCallback</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Calculating..."</span>);
+    <span class="hljs-comment">// We execute the callback inside the parent function</span>
+    <span class="hljs-keyword">return</span> operationCallback(num1, num2); 
+};
+
+<span class="hljs-comment">// 3. We pass the callback in WITHOUT parentheses ()</span>
+<span class="hljs-built_in">console</span>.log(calculate(<span class="hljs-number">5</span>, <span class="hljs-number">10</span>, add));      <span class="hljs-comment">// Output: 15</span>
+<span class="hljs-built_in">console</span>.log(calculate(<span class="hljs-number">5</span>, <span class="hljs-number">10</span>, multiply)); <span class="hljs-comment">// Output: 50</span>
+
+</div></code></pre>
+<p><strong>Example 2: Built-in Asynchronous Callbacks (Full Stack Context)</strong>
+You will use callbacks constantly when dealing with delays, event listeners, or reading databases in Node.js.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// setTimeout takes a callback function and a delay in milliseconds</span>
+setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"This callback runs after 2 seconds!"</span>);
+}, <span class="hljs-number">2000</span>);
+
+<span class="hljs-comment">// Event Listeners take a callback that runs only when the user clicks</span>
+<span class="hljs-comment">// document.querySelector('button').addEventListener('click', () =&gt; {</span>
+<span class="hljs-comment">//     console.log("Button was clicked!");</span>
+<span class="hljs-comment">// });</span>
+
+</div></code></pre>
+<hr>
+<h2 id="92-higher-order-functions-hofs">9.2 Higher-Order Functions (HOFs)</h2>
+<p><strong>Theory:</strong> A Higher-Order Function is simply the &quot;parent&quot; function. By definition, a function is a Higher-Order Function if it does at least one of two things:</p>
+<ol>
+<li>It <strong>accepts</strong> a function as an argument (like <code>calculate</code> or <code>setTimeout</code> above).</li>
+<li>It <strong>returns</strong> a new function.</li>
+</ol>
+<p><strong>Example: A Function that Returns a Function (Advanced but crucial for React)</strong>
+In React, you will often see this pattern used in custom Hooks or currying.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// This is a Higher-Order Function because it returns a brand new function</span>
+<span class="hljs-keyword">const</span> createGreeting = <span class="hljs-function">(<span class="hljs-params">greetingWord</span>) =&gt;</span> {
+    <span class="hljs-comment">// It returns this inner arrow function</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">userName</span>) =&gt;</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${greetingWord}</span>, <span class="hljs-subst">${userName}</span>!`</span>);
+    };
+};
+
+<span class="hljs-comment">// 1. We create specific functions using the HOF</span>
+<span class="hljs-keyword">const</span> sayHello = createGreeting(<span class="hljs-string">"Hello"</span>);
+<span class="hljs-keyword">const</span> sayWelcome = createGreeting(<span class="hljs-string">"Welcome to the app"</span>);
+
+<span class="hljs-comment">// 2. Now we use our freshly minted functions!</span>
+sayHello(<span class="hljs-string">"Alice"</span>);       <span class="hljs-comment">// Output: Hello, Alice!</span>
+sayWelcome(<span class="hljs-string">"Bob"</span>);       <span class="hljs-comment">// Output: Welcome to the app, Bob!</span>
+
+</div></code></pre>
+<hr>
+<h2 id="93-callback-hell-the-problem">9.3 Callback Hell (The Problem)</h2>
+<p><strong>Theory:</strong> Before Promises and <code>async/await</code> were invented, developers had to rely strictly on callbacks to handle asynchronous tasks (like fetching data from an API, then getting the user's profile, then getting their posts).</p>
+<p>If you nest too many callbacks inside each other, your code becomes shaped like a triangle. This is famously known as <strong>Callback Hell</strong> or the <strong>Pyramid of Doom</strong>, making code incredibly hard to read and debug.</p>
+<p><strong>Example (What to Avoid):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// This is Callback Hell. It is deeply nested and hard to read.</span>
+getUserData(userId, (user) =&gt; {
+    getProfile(user.profileId, (profile) =&gt; {
+        getPosts(profile.id, (posts) =&gt; {
+            getComments(posts[<span class="hljs-number">0</span>].id, (comments) =&gt; {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Finally got the comments!"</span>, comments);
+            });
+        });
+    });
+});
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong>
+When passing a callback to a function like an event listener, a very common beginner mistake is accidentally executing it immediately by adding parentheses.</p>
+<ul>
+<li><strong>WRONG:</strong> <code>button.addEventListener('click', submitForm());</code> (This runs <code>submitForm</code> instantly on page load!)</li>
+<li><strong>RIGHT:</strong> <code>button.addEventListener('click', submitForm);</code> (This hands the blueprint to the button to run <em>later</em>).</li>
+</ul>
+</blockquote>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="10-arrays-data-structures">10. Arrays (Data Structures)</h1>
+<p><strong>Theory:</strong> An Array is a special type of variable that can hold more than one value at a time. They are used to store lists of data (like a list of user objects, a string of comments, or a series of temperature readings).</p>
+<p>In JavaScript, arrays are <strong>zero-indexed</strong> (the first item is at position 0, not 1) and they are <strong>Reference Types</strong> (meaning they are stored in the Heap memory, and the variable just points to them).</p>
+<hr>
+<h2 id="101-creating-and-accessing-arrays">10.1 Creating and Accessing Arrays</h2>
+<p>While you can create an array using the <code>new Array()</code> constructor, the standard Full Stack practice is to use the <strong>Array Literal</strong> syntax <code>[]</code>.</p>
+<p><strong>Syntax &amp; Access:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Creating an array (Can hold mixed data types, but usually kept uniform)</span>
+<span class="hljs-keyword">const</span> fruits = [<span class="hljs-string">"Apple"</span>, <span class="hljs-string">"Banana"</span>, <span class="hljs-string">"Cherry"</span>];
+<span class="hljs-keyword">const</span> mixedData = [<span class="hljs-number">42</span>, <span class="hljs-string">"Hello"</span>, <span class="hljs-literal">true</span>, <span class="hljs-literal">null</span>]; 
+
+<span class="hljs-comment">// 2. Accessing elements via their Index</span>
+<span class="hljs-built_in">console</span>.log(fruits[<span class="hljs-number">0</span>]); <span class="hljs-comment">// "Apple"</span>
+<span class="hljs-built_in">console</span>.log(fruits[<span class="hljs-number">1</span>]); <span class="hljs-comment">// "Banana"</span>
+
+<span class="hljs-comment">// 3. Finding how many items are in the array</span>
+<span class="hljs-built_in">console</span>.log(fruits.length); <span class="hljs-comment">// 3</span>
+
+<span class="hljs-comment">// 4. Pro-Tip: Accessing the LAST element dynamically</span>
+<span class="hljs-built_in">console</span>.log(fruits[fruits.length - <span class="hljs-number">1</span>]); <span class="hljs-comment">// "Cherry"</span>
+
+</div></code></pre>
+<hr>
+<h2 id="102-modifying-arrays-basic-methods">10.2 Modifying Arrays (Basic Methods)</h2>
+<p>It is crucial to understand that these methods <strong>mutate</strong> (permanently change) the original array.</p>
+<h3 id="1-addingremoving-from-the-end-fastest">1. Adding/Removing from the END (Fastest)</h3>
+<ul>
+<li><strong><code>push(item)</code>:</strong> Adds one or more elements to the end. Returns the new length.</li>
+<li><strong><code>pop()</code>:</strong> Removes the <em>last</em> element. Returns the removed element.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> cart = [<span class="hljs-string">"Shirt"</span>, <span class="hljs-string">"Shoes"</span>];
+
+cart.push(<span class="hljs-string">"Hat"</span>); <span class="hljs-comment">// cart is now ["Shirt", "Shoes", "Hat"]</span>
+<span class="hljs-keyword">const</span> droppedItem = cart.pop(); <span class="hljs-comment">// cart is back to ["Shirt", "Shoes"]</span>
+<span class="hljs-built_in">console</span>.log(droppedItem); <span class="hljs-comment">// "Hat"</span>
+
+</div></code></pre>
+<h3 id="2-addingremoving-from-the-beginning-slower">2. Adding/Removing from the BEGINNING (Slower)</h3>
+<ul>
+<li><strong><code>unshift(item)</code>:</strong> Adds elements to the front. (Slower because it has to re-index every other item).</li>
+<li><strong><code>shift()</code>:</strong> Removes the <em>first</em> element.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> queue = [<span class="hljs-string">"Bob"</span>, <span class="hljs-string">"Charlie"</span>];
+
+queue.unshift(<span class="hljs-string">"Alice"</span>); <span class="hljs-comment">// queue is now ["Alice", "Bob", "Charlie"]</span>
+queue.shift();          <span class="hljs-comment">// queue is back to ["Bob", "Charlie"]</span>
+
+</div></code></pre>
+<hr>
+<h2 id="103-searching-and-checking-arrays">10.3 Searching and Checking Arrays</h2>
+<p>These methods are incredibly useful for simple conditional logic.</p>
+<ul>
+<li><strong><code>indexOf(item)</code>:</strong> Returns the first index at which a given element can be found, or <code>-1</code> if it is not present.</li>
+<li><strong><code>includes(item)</code> (ES7):</strong> Returns <code>true</code> if the array contains the item, <code>false</code> otherwise. (Much cleaner than checking if <code>indexOf !== -1</code>).</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> userRoles = [<span class="hljs-string">"Admin"</span>, <span class="hljs-string">"Editor"</span>, <span class="hljs-string">"Subscriber"</span>];
+
+<span class="hljs-built_in">console</span>.log(userRoles.indexOf(<span class="hljs-string">"Editor"</span>)); <span class="hljs-comment">// 1</span>
+<span class="hljs-built_in">console</span>.log(userRoles.indexOf(<span class="hljs-string">"Guest"</span>));  <span class="hljs-comment">// -1</span>
+
+<span class="hljs-keyword">if</span> (userRoles.includes(<span class="hljs-string">"Admin"</span>)) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Show admin dashboard."</span>); <span class="hljs-comment">// This will run</span>
+}
+
+</div></code></pre>
+<hr>
+<h2 id="104-the-big-interview-trap-slice-vs-splice">10.4 The Big Interview Trap: <code>slice()</code> vs. <code>splice()</code></h2>
+<h3 id="1-slicestartindex-endindex---does-not-mutate">1. <code>slice(startIndex, endIndex)</code> -&gt; Does NOT Mutate</h3>
+<p><strong>Theory:</strong> Extracts a section of an array and returns a <strong>brand new array</strong>. The original array remains completely untouched. The <code>endIndex</code> is <em>exclusive</em> (it stops right before it).</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> colors = [<span class="hljs-string">"Red"</span>, <span class="hljs-string">"Green"</span>, <span class="hljs-string">"Blue"</span>, <span class="hljs-string">"Yellow"</span>];
+<span class="hljs-keyword">const</span> primaryColors = colors.slice(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>); 
+
+<span class="hljs-built_in">console</span>.log(primaryColors); <span class="hljs-comment">// ["Red", "Green", "Blue"]</span>
+<span class="hljs-built_in">console</span>.log(colors);        <span class="hljs-comment">// ["Red", "Green", "Blue", "Yellow"] (Unchanged!)</span>
+
+</div></code></pre>
+<h3 id="2-splicestartindex-deletecount-itemtoadd---mutates">2. <code>splice(startIndex, deleteCount, itemToAdd)</code> -&gt; MUTATES</h3>
+<p><strong>Theory:</strong> Changes the contents of an array by removing or replacing existing elements and/or adding new elements <em>in place</em>.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> months = [<span class="hljs-string">"Jan"</span>, <span class="hljs-string">"March"</span>, <span class="hljs-string">"April"</span>, <span class="hljs-string">"June"</span>];
+
+<span class="hljs-comment">// Insert "Feb" at index 1, delete 0 items</span>
+months.splice(<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-string">"Feb"</span>);
+<span class="hljs-built_in">console</span>.log(months); <span class="hljs-comment">// ["Jan", "Feb", "March", "April", "June"]</span>
+
+<span class="hljs-comment">// Start at index 4, delete 1 item, replace with "May"</span>
+months.splice(<span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"May"</span>);
+<span class="hljs-built_in">console</span>.log(months); <span class="hljs-comment">// ["Jan", "Feb", "March", "April", "May"]</span>
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="11-array-higher-order-functions">11. Array Higher-Order Functions</h1>
+<p><strong>Theory:</strong> In modern Full Stack development (especially with React, Node.js, and functional programming patterns), you will rarely use standard <code>for</code> or <code>while</code> loops to manipulate arrays. Instead, you will use built-in Higher-Order Array Methods.</p>
+<p>These methods take a <strong>callback function</strong> as an argument. The most important feature of methods like <code>map</code> and <code>filter</code> is that they are <strong>non-mutating</strong>—they do not change the original array, but instead return a brand new array. This is a core rule of state management in frontend frameworks.</p>
+<hr>
+<h2 id="111-iteration-foreach">11.1 Iteration: <code>forEach()</code></h2>
+<p><strong>Theory:</strong> <code>forEach</code> simply executes a provided function once for each array element. It is the functional equivalent of a <code>for</code> loop.
+<strong>Crucial Rule:</strong> <code>forEach</code> ALWAYS returns <code>undefined</code>. You cannot chain it, and you cannot use it to create a new array. It is strictly used for &quot;side effects&quot; (like logging to the console or saving items to a database one by one).</p>
+<p><strong>Syntax:</strong> <code>array.forEach((element, index, originalArray) =&gt; { ... })</code></p>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> users = [<span class="hljs-string">"Alice"</span>, <span class="hljs-string">"Bob"</span>, <span class="hljs-string">"Charlie"</span>];
+
+<span class="hljs-comment">// Just doing something WITH the data, not changing or returning it.</span>
+users.forEach(<span class="hljs-function">(<span class="hljs-params">user, index</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`User <span class="hljs-subst">${index + <span class="hljs-number">1</span>}</span>: <span class="hljs-subst">${user}</span>`</span>);
+});
+
+</div></code></pre>
+<hr>
+<h2 id="112-transformation-map">11.2 Transformation: <code>map()</code></h2>
+<p><strong>Theory:</strong> <code>map</code> is arguably the most used array method in all of web development. It creates a <strong>brand new array</strong> populated with the results of calling a provided function on every element in the calling array. The new array will <em>always</em> be the exact same length as the original.</p>
+<p><strong>Example (Full Stack Context - Extracting Data):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> products = [
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">"Laptop"</span>, <span class="hljs-attr">price</span>: <span class="hljs-number">1000</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">"Mouse"</span>, <span class="hljs-attr">price</span>: <span class="hljs-number">25</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">"Keyboard"</span>, <span class="hljs-attr">price</span>: <span class="hljs-number">75</span> }
+];
+
+<span class="hljs-comment">// We just want an array of the names for a dropdown menu</span>
+<span class="hljs-keyword">const</span> productNames = products.map(<span class="hljs-function">(<span class="hljs-params">product</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> product.name; 
+});
+
+<span class="hljs-comment">// Implicit return shortcut (Super common in React!)</span>
+<span class="hljs-comment">// const productNames = products.map(product =&gt; product.name);</span>
+
+<span class="hljs-built_in">console</span>.log(productNames); <span class="hljs-comment">// ["Laptop", "Mouse", "Keyboard"]</span>
+<span class="hljs-built_in">console</span>.log(products);     <span class="hljs-comment">// Original array is completely untouched</span>
+
+</div></code></pre>
+<hr>
+<h2 id="113-selection-filter">11.3 Selection: <code>filter()</code></h2>
+<p><strong>Theory:</strong> <code>filter</code> creates a <strong>brand new array</strong> with all elements that pass the test implemented by the provided callback function. The callback must return a boolean (<code>true</code> or <code>false</code>). If <code>true</code>, the item is kept. If <code>false</code>, it is skipped. The resulting array can be shorter than the original.</p>
+<p><strong>Example (Full Stack Context - Searching/Sorting):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> allUsers = [
+    { <span class="hljs-attr">name</span>: <span class="hljs-string">"Alice"</span>, <span class="hljs-attr">active</span>: <span class="hljs-literal">true</span> },
+    { <span class="hljs-attr">name</span>: <span class="hljs-string">"Bob"</span>, <span class="hljs-attr">active</span>: <span class="hljs-literal">false</span> },
+    { <span class="hljs-attr">name</span>: <span class="hljs-string">"Charlie"</span>, <span class="hljs-attr">active</span>: <span class="hljs-literal">true</span> }
+];
+
+<span class="hljs-comment">// Return ONLY the users where 'active' is true</span>
+<span class="hljs-keyword">const</span> activeUsers = allUsers.filter(<span class="hljs-function"><span class="hljs-params">user</span> =&gt;</span> user.active === <span class="hljs-literal">true</span>);
+
+<span class="hljs-built_in">console</span>.log(activeUsers); 
+<span class="hljs-comment">// [{ name: "Alice", active: true }, { name: "Charlie", active: true }]</span>
+
+</div></code></pre>
+<hr>
+<h2 id="114-accumulation-reduce">11.4 Accumulation: <code>reduce()</code></h2>
+<p><strong>Theory:</strong> <code>reduce</code> is the most powerful (and most confusing) array method. It executes a &quot;reducer&quot; callback function on each element, passing in the return value from the calculation on the preceding element. The final result is a <strong>single value</strong> (which could be a number, a string, or even a brand new object/array).</p>
+<p><strong>Syntax:</strong> <code>array.reduce((accumulator, currentValue) =&gt; { ... }, initialValue)</code></p>
+<ul>
+<li><strong>Accumulator:</strong> The running total / aggregated value.</li>
+<li><strong>CurrentValue:</strong> The current item being processed in the array.</li>
+<li><strong>InitialValue:</strong> What the accumulator should start as (ALWAYS provide this to avoid bugs).</li>
+</ul>
+<p><strong>Example (Full Stack Context - Shopping Cart Total):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> cartPrices = [<span class="hljs-number">29.99</span>, <span class="hljs-number">9.99</span>, <span class="hljs-number">4.00</span>, <span class="hljs-number">50.00</span>];
+
+<span class="hljs-keyword">const</span> cartTotal = cartPrices.reduce(<span class="hljs-function">(<span class="hljs-params">total, currentPrice</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> total + currentPrice;
+}, <span class="hljs-number">0</span>); <span class="hljs-comment">// 0 is the initialValue for 'total'</span>
+
+<span class="hljs-built_in">console</span>.log(cartTotal); <span class="hljs-comment">// 93.98</span>
+
+</div></code></pre>
+<hr>
+<h2 id="115-utilities-find-some-and-every">11.5 Utilities: <code>find()</code>, <code>some()</code>, and <code>every()</code></h2>
+<p>These are highly optimized HOFs that &quot;short-circuit&quot; (stop running) as soon as they find what they are looking for, saving processing power.</p>
+<h3 id="1-find">1. <code>find()</code></h3>
+<p>Returns the <strong>first element</strong> that satisfies the testing function. If no values satisfy the testing function, <code>undefined</code> is returned. (Great for finding a specific user by ID in a database array).</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> ids = [<span class="hljs-number">10</span>, <span class="hljs-number">22</span>, <span class="hljs-number">99</span>, <span class="hljs-number">104</span>];
+<span class="hljs-keyword">const</span> firstOver50 = ids.find(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> id &gt; <span class="hljs-number">50</span>); 
+<span class="hljs-built_in">console</span>.log(firstOver50); <span class="hljs-comment">// 99 (It stops checking after 99)</span>
+
+</div></code></pre>
+<h3 id="2-some">2. <code>some()</code></h3>
+<p>Returns <code>true</code> if <strong>at least one</strong> element passes the test. Returns <code>false</code> otherwise.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> grades = [<span class="hljs-number">80</span>, <span class="hljs-number">90</span>, <span class="hljs-number">65</span>, <span class="hljs-number">95</span>];
+<span class="hljs-keyword">const</span> hasFailingGrade = grades.some(<span class="hljs-function"><span class="hljs-params">grade</span> =&gt;</span> grade &lt; <span class="hljs-number">70</span>); 
+<span class="hljs-built_in">console</span>.log(hasFailingGrade); <span class="hljs-comment">// true</span>
+
+</div></code></pre>
+<h3 id="3-every">3. <code>every()</code></h3>
+<p>Returns <code>true</code> ONLY if <strong>every single element</strong> passes the test.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> ages = [<span class="hljs-number">21</span>, <span class="hljs-number">25</span>, <span class="hljs-number">30</span>, <span class="hljs-number">19</span>];
+<span class="hljs-keyword">const</span> allAdults = ages.every(<span class="hljs-function"><span class="hljs-params">age</span> =&gt;</span> age &gt;= <span class="hljs-number">18</span>);
+<span class="hljs-built_in">console</span>.log(allAdults); <span class="hljs-comment">// true</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="12-introduction-to-the-dom-document-object-model">12. Introduction to the DOM (Document Object Model)</h1>
+<p><strong>Theory:</strong> The DOM is exactly what it sounds like: a <strong>Model</strong> of your HTML <strong>Document</strong> represented as a JavaScript <strong>Object</strong>.</p>
+<p>When a web browser loads an HTML file, it reads the code and creates a hierarchical tree of &quot;nodes&quot; (objects) in its memory. JavaScript uses this tree to read, change, add, or delete HTML elements and CSS styles dynamically without needing to refresh the page.</p>
+<blockquote>
+<p><strong>Crucial Full Stack Context:</strong> The DOM is <strong>NOT</strong> a part of the core JavaScript language. It is a &quot;Web API&quot; provided by the browser. This means the DOM only exists on the Frontend. If you try to access the DOM (<code>document.querySelector</code>) in a backend Node.js file, your server will immediately crash because servers don't have web pages!</p>
+</blockquote>
+<hr>
+<h2 id="121-the-document-object">12.1 The <code>document</code> Object</h2>
+<p><strong>Theory:</strong> The entry point to the DOM is the global <code>document</code> object. Every single HTML tag on your page is a property or method nested somewhere deep inside this massive object.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// This logs the entire visible HTML document to your console</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">document</span>.body); 
+
+<span class="hljs-comment">// This gives you the title of the webpage (from the &lt;title&gt; tag)</span>
+<span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">document</span>.title); 
+
+</div></code></pre>
+<hr>
+<h2 id="123-manipulating-text-and-html">12.3 Manipulating Text and HTML</h2>
+<p>Once you have selected an element and stored it in a variable, you can change what it displays.</p>
+<ul>
+<li><strong><code>innerText</code>:</strong> Changes the visible text inside the element.</li>
+<li><strong><code>innerHTML</code>:</strong> Changes the text AND renders any HTML tags you pass into it.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"welcome-message"</span>&gt;</span>Hello User<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-comment">// JavaScript</span>
+<span class="hljs-keyword">const</span> welcomeDiv = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#welcome-message'</span>);
+
+<span class="hljs-comment">// 1. Changing Text</span>
+welcomeDiv.innerText = <span class="hljs-string">"Welcome back, Alice!"</span>; 
+<span class="hljs-comment">// Result: &lt;div id="welcome-message"&gt;Welcome back, Alice!&lt;/div&gt;</span>
+
+<span class="hljs-comment">// 2. Changing HTML (Be careful with this due to security risks!)</span>
+welcomeDiv.innerHTML = <span class="hljs-string">"Welcome back, &lt;strong&gt;Alice&lt;/strong&gt;!"</span>;
+<span class="hljs-comment">// Result: &lt;div id="welcome-message"&gt;Welcome back, &lt;strong&gt;Alice&lt;/strong&gt;!&lt;/div&gt;</span>
+
+</div></code></pre>
+<hr>
+<h2 id="124-manipulating-css-styles-and-classes">12.4 Manipulating CSS Styles and Classes</h2>
+<p>You can also use JS to dynamically change how elements look (e.g., turning an input border red if the user types an invalid email).</p>
+<h3 id="1-inline-styles-elementstyle">1. Inline Styles (<code>element.style</code>)</h3>
+<p>You can apply CSS directly to an element. Notice that CSS properties with hyphens (like <code>background-color</code>) must be written in <strong>camelCase</strong> in JavaScript (<code>backgroundColor</code>).</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> box = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'.box'</span>);
+
+box.style.backgroundColor = <span class="hljs-string">'blue'</span>;
+box.style.fontSize = <span class="hljs-string">'24px'</span>;
+box.style.display = <span class="hljs-string">'none'</span>; <span class="hljs-comment">// Hides the element</span>
+
+</div></code></pre>
+<h3 id="2-the-classlist-api-the-recommended-way">2. The <code>classList</code> API (The Recommended Way)</h3>
+<p>Instead of adding inline styles (which is messy), it is better practice to pre-write your CSS classes in your stylesheet, and use JS to simply toggle those classes on and off.</p>
+<ul>
+<li><strong><code>classList.add('className')</code>:</strong> Adds a class.</li>
+<li><strong><code>classList.remove('className')</code>:</strong> Removes a class.</li>
+<li><strong><code>classList.toggle('className')</code>:</strong> Adds it if it's missing, removes it if it's there.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">/* CSS */</span>
+<span class="hljs-selector-class">.dark-mode</span> {
+    <span class="hljs-attribute">background-color</span>: black;
+    <span class="hljs-attribute">color</span>: white;
+}
+
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-comment">// JavaScript</span>
+<span class="hljs-keyword">const</span> body = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'body'</span>);
+
+<span class="hljs-comment">// Turns dark mode on</span>
+body.classList.add(<span class="hljs-string">'dark-mode'</span>); 
+
+<span class="hljs-comment">// If they click a button, this toggles it on and off</span>
+body.classList.toggle(<span class="hljs-string">'dark-mode'</span>); 
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong>
+When using <code>classList</code>, <strong>do not</strong> put a dot <code>.</code> in front of the class name!</p>
+<ul>
+<li><strong>WRONG:</strong> <code>box.classList.add('.active');</code></li>
+<li><strong>RIGHT:</strong> <code>box.classList.add('active');</code>
+The dot is only used for querying (<code>querySelector</code>), not for naming classes.</li>
+</ul>
+</blockquote>
+<pre class="hljs"><code><div>
+</div></code></pre>
+<h1 id="13-deep-dive-queryselector-and-queryselectorall">13. Deep Dive: <code>querySelector</code> and <code>querySelectorAll</code></h1>
+<p><strong>Theory:</strong> In the early days of JavaScript, developers had to memorize multiple different methods to find elements (<code>getElementById</code>, <code>getElementsByTagName</code>, etc.). Modern JavaScript simplified this entirely with the <code>querySelector</code> API.</p>
+<p>It allows you to use <strong>exact CSS selector syntax</strong> to hunt down elements in the DOM tree. If you know how to style it in CSS, you know how to select it in JavaScript.</p>
+<hr>
+<h2 id="131-queryselector-selecting-a-single-element">13.1 <code>querySelector()</code> (Selecting a Single Element)</h2>
+<p><strong>Theory:</strong> This method searches the DOM from top to bottom and returns the <strong>very first</strong> HTML element that matches your CSS query. Once it finds a match, it stops looking. If it finds nothing, it returns <code>null</code>.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> element = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'any-valid-css-selector'</span>);
+
+</div></code></pre>
+<p><strong>Examples (Full Stack Context - Form Selection):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Tag Selector (Finds the first &lt;button&gt; on the page)</span>
+<span class="hljs-keyword">const</span> firstButton = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'button'</span>);
+
+<span class="hljs-comment">// 2. Class Selector (Finds the first element with class "error-text")</span>
+<span class="hljs-keyword">const</span> errorMsg = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'.error-text'</span>);
+
+<span class="hljs-comment">// 3. ID Selector (Finds the exact element with ID "login-form")</span>
+<span class="hljs-keyword">const</span> loginForm = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#login-form'</span>);
+
+<span class="hljs-comment">// 4. Advanced CSS Combinators (Highly useful!)</span>
+<span class="hljs-comment">// Finds the first &lt;input&gt; that is nested directly inside a form with class "auth"</span>
+<span class="hljs-keyword">const</span> emailInput = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'form.auth &gt; input'</span>);
+
+<span class="hljs-comment">// 5. Attribute Selectors</span>
+<span class="hljs-comment">// Finds the first input where the type attribute is specifically "password"</span>
+<span class="hljs-keyword">const</span> passwordInput = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'input[type="password"]'</span>);
+
+</div></code></pre>
+<hr>
+<h2 id="132-queryselectorall-selecting-multiple-elements">13.2 <code>querySelectorAll()</code> (Selecting Multiple Elements)</h2>
+<p><strong>Theory:</strong> What if you want to find <em>every</em> matching element, not just the first one? <code>querySelectorAll</code> returns a collection of all elements that match the given CSS selector.</p>
+<p><strong>Crucial Rule:</strong> It does NOT return a standard JavaScript Array. It returns a <strong>NodeList</strong>.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Grabs EVERY single &lt;li&gt; item inside the navigation menu</span>
+<span class="hljs-keyword">const</span> navLinks = <span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'nav ul li'</span>);
+
+<span class="hljs-comment">// Grabs all buttons on the page with the class "btn-danger"</span>
+<span class="hljs-keyword">const</span> deleteButtons = <span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'button.btn-danger'</span>);
+
+<span class="hljs-built_in">console</span>.log(deleteButtons.length); <span class="hljs-comment">// You can check how many it found</span>
+
+</div></code></pre>
+<hr>
+<h2 id="133-nodelist-vs-array">13.3 NodeList vs. Array</h2>
+<p>Because <code>querySelectorAll</code> returns a NodeList, it behaves <em>almost</em> like an array, but lacks the powerful Higher-Order Functions we covered in Section 11.</p>
+<ul>
+<li><strong>What you CAN do with a NodeList:</strong> You can check its <code>.length</code> and you can use <code>.forEach()</code> to loop over it.</li>
+<li><strong>What you CANNOT do with a NodeList:</strong> You cannot use <code>.map()</code>, <code>.filter()</code>, or <code>.reduce()</code>.</li>
+</ul>
+<p><strong>Example (Converting NodeList to Array):</strong>
+If you need to use advanced array methods on your DOM elements, you must convert the NodeList into a true Array first using the Spread Operator (<code>...</code>) or <code>Array.from()</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> allImagesNodeList = <span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'img'</span>);
+
+<span class="hljs-comment">// allImagesNodeList.map(...) // ERROR! .map is not a function</span>
+
+<span class="hljs-comment">// Modern Solution: Spread it into a real array!</span>
+<span class="hljs-keyword">const</span> allImagesArray = [...allImagesNodeList];
+
+<span class="hljs-comment">// Now you can use array methods to extract data</span>
+<span class="hljs-keyword">const</span> imageSources = allImagesArray.map(<span class="hljs-function"><span class="hljs-params">img</span> =&gt;</span> img.src);
+<span class="hljs-built_in">console</span>.log(imageSources);
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="14-traditional-dom-querying-id-and-class-name">14. Traditional DOM Querying (ID and Class Name)</h1>
+<p><strong>Theory:</strong> Before <code>querySelector</code> was introduced to JavaScript, developers had to use specific methods depending on exactly <em>what</em> HTML attribute they were looking for.</p>
+<p>While <code>querySelector</code> uses CSS syntax (requiring <code>.</code> for classes and <code>#</code> for IDs), these traditional methods <strong>do not</strong>. They only take the raw string name.</p>
+<hr>
+<h2 id="141-documentgetelementbyid">14.1 <code>document.getElementById()</code></h2>
+<p><strong>Theory:</strong> Because HTML IDs are supposed to be strictly unique (you should only ever have one specific ID per page), this method searches the DOM and returns the <strong>single HTML element</strong> that matches. If it doesn't exist, it returns <code>null</code>.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> element = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'id-name-here'</span>);
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// HTML: &lt;div id="dashboard-container"&gt;...&lt;/div&gt;</span>
+
+<span class="hljs-comment">// CORRECT: Just the raw string name</span>
+<span class="hljs-keyword">const</span> dashboard = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'dashboard-container'</span>);
+
+<span class="hljs-comment">// WRONG: Do not use the CSS '#' selector here! It will return null.</span>
+<span class="hljs-keyword">const</span> dashboardWrong = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'#dashboard-container'</span>); 
+
+</div></code></pre>
+<hr>
+<h2 id="142-documentgetelementsbyclassname">14.2 <code>document.getElementsByClassName()</code></h2>
+<p><strong>Theory:</strong> Because multiple HTML elements can share the exact same class, this method returns a collection of <strong>all</strong> elements that have the specified class name.</p>
+<p><strong>Crucial Rule:</strong> Notice that the method name is plural (<code>getElements...</code>). It does NOT return a single element, and it does NOT return a standard Array. It returns an <strong>HTMLCollection</strong>.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> elements = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'class-name-here'</span>);
+
+</div></code></pre>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// HTML: </span>
+<span class="hljs-comment">// &lt;button class="btn-primary"&gt;Submit&lt;/button&gt;</span>
+<span class="hljs-comment">// &lt;button class="btn-primary"&gt;Cancel&lt;/button&gt;</span>
+
+<span class="hljs-comment">// CORRECT: Just the raw string name</span>
+<span class="hljs-keyword">const</span> primaryButtons = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'btn-primary'</span>);
+
+<span class="hljs-comment">// WRONG: Do not use the CSS '.' selector here!</span>
+<span class="hljs-keyword">const</span> primaryButtonsWrong = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'.btn-primary'</span>);
+
+<span class="hljs-comment">// Accessing elements inside the HTMLCollection</span>
+<span class="hljs-built_in">console</span>.log(primaryButtons[<span class="hljs-number">0</span>]); <span class="hljs-comment">// Logs the "Submit" button</span>
+<span class="hljs-built_in">console</span>.log(primaryButtons.length); <span class="hljs-comment">// 2</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="15-event-listeners-and-the-event-object">15. Event Listeners and the Event Object</h1>
+<p><strong>Theory:</strong> JavaScript in the browser is heavily <strong>event-driven</strong>. This means your code sits quietly and waits for specific things to happen—like a user clicking a button, typing in a text field, scrolling, or submitting a form.</p>
+<p>To &quot;listen&quot; for these actions, we attach an <strong>Event Listener</strong> to a specific DOM element.</p>
+<hr>
+<h2 id="151-the-addeventlistener-method">15.1 The <code>addEventListener()</code> Method</h2>
+<p><strong>Theory:</strong> This is the modern, standard way to handle events. It takes two main arguments: the name of the event you are listening for (as a string), and a <strong>callback function</strong> that will run <em>only</em> when that event happens.</p>
+<p><strong>Syntax:</strong></p>
+<pre class="hljs"><code><div>element.addEventListener(<span class="hljs-string">'eventType'</span>, callbackFunction);
+
+</div></code></pre>
+<p><strong>Example (A Simple Click):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> submitBtn = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#submit-btn'</span>);
+
+<span class="hljs-comment">// The arrow function is the callback. It waits until the click happens.</span>
+submitBtn.addEventListener(<span class="hljs-string">'click'</span>, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Button was clicked! Sending data to server..."</span>);
+    <span class="hljs-comment">// You could also change the DOM here, like:</span>
+    <span class="hljs-comment">// document.body.style.backgroundColor = 'green';</span>
+});
+
+</div></code></pre>
+<hr>
+<h2 id="152-the-event-object-e-or-event">15.2 The Event Object (<code>e</code> or <code>event</code>)</h2>
+<p><strong>Theory:</strong> Whenever an event happens, the browser automatically creates an <strong>Event Object</strong> packed with details about what just occurred (e.g., what exact pixel was clicked, what key was pressed on the keyboard).</p>
+<p>The browser passes this object as the <strong>first argument</strong> into your callback function. Developers usually name this parameter <code>e</code>, <code>evt</code>, or <code>event</code>.</p>
+<p><strong>Crucial Properties:</strong></p>
+<ul>
+<li><strong><code>e.target</code>:</strong> The exact HTML element that triggered the event.</li>
+<li><strong><code>e.type</code>:</strong> The type of event that was triggered (e.g., &quot;click&quot;, &quot;keydown&quot;).</li>
+<li><strong><code>e.key</code>:</strong> (For keyboard events) The specific key that was pressed.</li>
+</ul>
+<p><strong>Example (Reading Text Input):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> usernameInput = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#username'</span>);
+
+<span class="hljs-comment">// 'input' fires every single time a keystroke happens in the field</span>
+usernameInput.addEventListener(<span class="hljs-string">'input'</span>, (e) =&gt; {
+    <span class="hljs-comment">// e.target is the &lt;input&gt; element itself.</span>
+    <span class="hljs-comment">// e.target.value is whatever text the user has typed so far.</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`User is typing: <span class="hljs-subst">${e.target.value}</span>`</span>);
+});
+
+</div></code></pre>
+<hr>
+<h2 id="153-handling-forms-and-epreventdefault">15.3 Handling Forms and <code>e.preventDefault()</code></h2>
+<p><strong>Theory:</strong> In Full Stack development, forms are everything. By default, when a user clicks the &quot;Submit&quot; button inside an HTML <code>&lt;form&gt;</code>, the browser tries to refresh the entire page and send the data to a new URL.</p>
+<p>In modern web apps (like React or standard Single Page Applications), <strong>we do not want the page to refresh</strong>. We want JavaScript to intercept the data so we can send it to our Node.js backend using an API call.</p>
+<p>We stop the default refresh behavior using <code>e.preventDefault()</code>.</p>
+<p><strong>Example (The Full Stack Standard Form Submission):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"login-form"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"email"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"email"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"submit"</span>&gt;</span>Log In<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-comment">// JavaScript</span>
+<span class="hljs-keyword">const</span> loginForm = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#login-form'</span>);
+<span class="hljs-keyword">const</span> emailField = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#email'</span>);
+
+<span class="hljs-comment">// Always listen for 'submit' on the FORM, not 'click' on the BUTTON!</span>
+loginForm.addEventListener(<span class="hljs-string">'submit'</span>, (e) =&gt; {
+    <span class="hljs-comment">// 1. STOP the page from refreshing!</span>
+    e.preventDefault(); 
+    
+    <span class="hljs-comment">// 2. Grab the data from the inputs</span>
+    <span class="hljs-keyword">const</span> userEmail = emailField.value;
+    
+    <span class="hljs-comment">// 3. (Usually) Send this data to your backend...</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Sending <span class="hljs-subst">${userEmail}</span> to the database for validation.`</span>);
+});
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="16-creating-and-removing-elements-dynamically">16. Creating and Removing Elements Dynamically</h1>
+<p><strong>Theory:</strong> When you want to add new content to the screen without refreshing the page (like adding a new comment to a post or rendering a shopping cart), you must construct new HTML elements using JavaScript.</p>
+<p>Creating an element in JS is a strict <strong>3-Step Process</strong>. If you miss a step, your element will not show up on the screen.</p>
+<hr>
+<h2 id="161-the-3-step-process">16.1 The 3-Step Process</h2>
+<h3 id="step-1-create-the-element-the-%22ghost%22-node">Step 1: Create the Element (The &quot;Ghost&quot; Node)</h3>
+<p>You use <code>document.createElement('tagName')</code>. This creates the HTML tag, but it only exists in the computer's memory. It is not visible on the page yet.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> newListItem = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'li'</span>);
+<span class="hljs-comment">// In memory: &lt;li&gt;&lt;/li&gt;</span>
+
+</div></code></pre>
+<h3 id="step-2-modify-the-element">Step 2: Modify the Element</h3>
+<p>Now that the element exists in memory, you add text, CSS classes, or attributes (like <code>src</code> or <code>id</code>) to it.</p>
+<pre class="hljs"><code><div>newListItem.innerText = <span class="hljs-string">"Buy groceries"</span>;
+newListItem.classList.add(<span class="hljs-string">'todo-item'</span>);
+<span class="hljs-comment">// In memory: &lt;li class="todo-item"&gt;Buy groceries&lt;/li&gt;</span>
+
+</div></code></pre>
+<h3 id="step-3-attach-append-the-element-to-the-dom">Step 3: Attach (Append) the Element to the DOM</h3>
+<p>Finally, you must select an existing element on the page (the parent) and physically attach your new element inside it.</p>
+<ul>
+<li><strong><code>parentElement.append(newChild)</code>:</strong> (Modern) Adds the new element to the <em>bottom</em> (end) of the parent.</li>
+<li><strong><code>parentElement.prepend(newChild)</code>:</strong> Adds the new element to the <em>top</em> (beginning) of the parent.</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-comment">// Assume we have &lt;ul id="todo-list"&gt;&lt;/ul&gt; in our HTML</span>
+<span class="hljs-keyword">const</span> todoList = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#todo-list'</span>);
+
+<span class="hljs-comment">// Attach the new &lt;li&gt; to the existing &lt;ul&gt;</span>
+todoList.append(newListItem); 
+
+</div></code></pre>
+<hr>
+<h2 id="163-removing-elements">16.3 Removing Elements</h2>
+<p><strong>Theory:</strong> Removing an element is much simpler than creating one. You simply select the element you want to destroy and call the <code>.remove()</code> method on it.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> banner = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'.promo-banner'</span>);
+
+<span class="hljs-comment">// User clicks a close button</span>
+<span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#close-promo'</span>).addEventListener(<span class="hljs-string">'click'</span>, () =&gt; {
+    banner.remove(); <span class="hljs-comment">// Completely deletes the element from the DOM</span>
+});
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="17-asynchronous-javascript-promises">17. Asynchronous JavaScript: Promises</h1>
+<p><strong>Theory:</strong> A Promise in JavaScript is exactly like a promise in real life. It is an object representing the eventual completion (or failure) of an asynchronous operation.</p>
+<p><strong>The Restaurant Analogy:</strong> You order food at a busy restaurant. The cashier doesn't make you stand at the register until the food is ready (which would block the line). Instead, they give you a buzzer. That buzzer is a <strong>Promise</strong>. You can go sit down, text your friends, and drink water (execute other code). The buzzer promises to let you know when your food is ready, or if they ran out of ingredients.</p>
+<hr>
+<h2 id="171-the-three-states-of-a-promise">17.1 The Three States of a Promise</h2>
+<p>A Promise will always be in one of these three distinct states:</p>
+<ol>
+<li><strong>Pending:</strong> The initial state. The operation has started, but hasn't finished yet (The buzzer is in your hand, quiet).</li>
+<li><strong>Fulfilled (Resolved):</strong> The operation completed successfully. The promise returns the requested data (The buzzer flashes, you get your food).</li>
+<li><strong>Rejected:</strong> The operation failed. The promise returns an error message (The cashier comes over and says they are out of food).</li>
+</ol>
+<hr>
+<h2 id="172-creating-a-promise-the-blueprint">17.2 Creating a Promise (The Blueprint)</h2>
+<p><strong>Theory:</strong> While Full Stack developers <em>consume</em> promises daily (like fetching data), you will occasionally need to <em>create</em> your own. You do this using the <code>new Promise</code> constructor, which takes a callback function with two arguments provided by JavaScript: <code>resolve</code> and <code>reject</code>.</p>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> orderFood = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Kitchen is cooking..."</span>);
+    
+    <span class="hljs-comment">// Simulating a 2-second delay for cooking</span>
+    setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        <span class="hljs-keyword">const</span> ingredientsAvailable = <span class="hljs-literal">true</span>; <span class="hljs-comment">// Change to false to see the rejection</span>
+        
+        <span class="hljs-keyword">if</span> (ingredientsAvailable) {
+            resolve({ <span class="hljs-attr">meal</span>: <span class="hljs-string">"Burger"</span>, <span class="hljs-attr">drink</span>: <span class="hljs-string">"Cola"</span> }); <span class="hljs-comment">// Success! We pass the data out.</span>
+        } <span class="hljs-keyword">else</span> {
+            reject(<span class="hljs-string">"Error: We ran out of beef."</span>); <span class="hljs-comment">// Failure! We pass the error out.</span>
+        }
+    }, <span class="hljs-number">2000</span>);
+});
+
+</div></code></pre>
+<hr>
+<h2 id="173-consuming-a-promise-then-catch-finally">17.3 Consuming a Promise (<code>.then</code>, <code>.catch</code>, <code>.finally</code>)</h2>
+<p><strong>Theory:</strong> Once a promise is created (or returned to you by a library/API), you have to handle what happens when it resolves or rejects. You do this by chaining specific methods onto the promise object.</p>
+<ul>
+<li><strong><code>.then(data)</code>:</strong> Runs ONLY if the promise is <strong>Fulfilled</strong>. It catches the data passed into <code>resolve()</code>.</li>
+<li><strong><code>.catch(error)</code>:</strong> Runs ONLY if the promise is <strong>Rejected</strong>. It catches the error passed into <code>reject()</code>.</li>
+<li><strong><code>.finally()</code>:</strong> Runs ALWAYS, regardless of success or failure. (Great for hiding loading spinners).</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// We call the promise we made above</span>
+orderFood
+    .then(<span class="hljs-function">(<span class="hljs-params">foodData</span>) =&gt;</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Success! I am eating a <span class="hljs-subst">${foodData.meal}</span>.`</span>);
+    })
+    .catch(<span class="hljs-function">(<span class="hljs-params">errorMessage</span>) =&gt;</span> {
+        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">`Oh no. <span class="hljs-subst">${errorMessage}</span>`</span>);
+    })
+    .finally(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Leaving the restaurant now."</span>); <span class="hljs-comment">// This runs no matter what</span>
+    });
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="18-api-calling-and-async--await">18. API Calling and <code>async</code> / <code>await</code></h1>
+<p><strong>Theory:</strong> In modern Full Stack development, you will spend a massive amount of time making HTTP requests to APIs (e.g., fetching a list of YouTube videos, sending a new user registration to your database).</p>
+<p>While <code>.then()</code> and <code>.catch()</code> work perfectly fine for Promises, ES8 (2017) introduced <code>async / await</code>. This is &quot;syntactic sugar&quot; that allows you to write asynchronous, non-blocking code that <em>looks</em> and <em>reads</em> like traditional, synchronous, top-to-bottom code.</p>
+<hr>
+<h2 id="181-the-async-and-await-keywords">18.1 The <code>async</code> and <code>await</code> Keywords</h2>
+<ul>
+<li><strong><code>async</code>:</strong> You place this keyword in front of a function declaration. It tells JavaScript: <em>&quot;Hey, this function is going to take some time, and it will automatically return a Promise.&quot;</em></li>
+<li><strong><code>await</code>:</strong> You can ONLY use this keyword inside an <code>async</code> function. It tells JavaScript: <em>&quot;Pause the execution of this specific function right here, and wait until the Promise resolves before moving to the next line.&quot;</em></li>
+</ul>
+<hr>
+<h2 id="182-making-a-get-request-fetching-data">18.2 Making a GET Request (Fetching Data)</h2>
+<p><strong>Theory:</strong> A GET request is the default method for APIs. You use it when you only want to <em>read</em> data from a server, not change it.</p>
+<p>To safely use <code>async/await</code>, you must wrap your code in a <code>try...catch</code> block. This is how you handle errors (like a broken URL or a server crash) since you are no longer using <code>.catch()</code>.</p>
+<p><strong>Example (Fetching a User Profile):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Declare the function as 'async'</span>
+<span class="hljs-keyword">const</span> fetchUserProfile = <span class="hljs-keyword">async</span> (userId) =&gt; {
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Fetching user..."</span>);
+        
+        <span class="hljs-comment">// 2. 'await' the fetch request. The code stops here until the server responds.</span>
+        <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`https://jsonplaceholder.typicode.com/users/<span class="hljs-subst">${userId}</span>`</span>);
+        
+        <span class="hljs-comment">// 3. Manually check if the network response was OK (Status 200-299)</span>
+        <span class="hljs-keyword">if</span> (!response.ok) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`HTTP Error! Status: <span class="hljs-subst">${response.status}</span>`</span>);
+        }
+        
+        <span class="hljs-comment">// 4. 'await' the parsing of the JSON data. (response.json() returns a Promise!)</span>
+        <span class="hljs-keyword">const</span> userData = <span class="hljs-keyword">await</span> response.json();
+        
+        <span class="hljs-comment">// 5. Do something with the data!</span>
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"User Data Received:"</span>, userData.name);
+        <span class="hljs-keyword">return</span> userData;
+
+    } <span class="hljs-keyword">catch</span> (error) {
+        <span class="hljs-comment">// 6. This block catches network errors AND our manual HTTP Error throw</span>
+        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">"Failed to fetch user:"</span>, error.message);
+    }
+};
+
+<span class="hljs-comment">// Calling the function</span>
+fetchUserProfile(<span class="hljs-number">1</span>);
+
+</div></code></pre>
+<hr>
+<h2 id="183-making-a-post-request-sending-data">18.3 Making a POST Request (Sending Data)</h2>
+<p><strong>Theory:</strong> When you want to send <em>new</em> data to your backend (like submitting a signup form or creating a new blog post), you must make a POST request.</p>
+<p>To do this with <code>fetch()</code>, you have to pass a <strong>configuration object</strong> as the second argument. This object tells the API <em>how</em> you are sending the data.</p>
+<p><strong>Example (Creating a New Post):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> createNewPost = <span class="hljs-keyword">async</span> (postTitle, postBody) =&gt; {
+    <span class="hljs-comment">// 1. Prepare the data you want to send</span>
+    <span class="hljs-keyword">const</span> newPostData = {
+        <span class="hljs-attr">title</span>: postTitle,
+        <span class="hljs-attr">body</span>: postBody,
+        <span class="hljs-attr">userId</span>: <span class="hljs-number">1</span>
+    };
+
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">'[https://jsonplaceholder.typicode.com/posts](https://jsonplaceholder.typicode.com/posts)'</span>, {
+            <span class="hljs-attr">method</span>: <span class="hljs-string">'POST'</span>, <span class="hljs-comment">// Change method from default GET to POST</span>
+            <span class="hljs-attr">headers</span>: {
+                <span class="hljs-comment">// Tell the server we are sending JSON data</span>
+                <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/json'</span> 
+            },
+            <span class="hljs-comment">// Convert our JS Object into a raw JSON String</span>
+            <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify(newPostData) 
+        });
+
+        <span class="hljs-keyword">if</span> (!response.ok) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`HTTP Error! Status: <span class="hljs-subst">${response.status}</span>`</span>);
+        }
+
+        <span class="hljs-keyword">const</span> savedPost = <span class="hljs-keyword">await</span> response.json();
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Successfully created post!"</span>, savedPost);
+
+    } <span class="hljs-keyword">catch</span> (error) {
+        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">"Error creating post:"</span>, error);
+    }
+};
+
+<span class="hljs-comment">// Calling the function</span>
+createNewPost(<span class="hljs-string">"My First API Post"</span>, <span class="hljs-string">"This is so cool!"</span>);
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="19-web-storage-localstorage-and-sessionstorage">19. Web Storage (<code>localStorage</code> and <code>sessionStorage</code>)</h1>
+<p><strong>Theory:</strong> The Web Storage API provides mechanisms by which browsers can store key/value pairs locally within the user's browser. It is much more intuitive than using old-school cookies, and it can store much more data (usually around 5MB per domain).</p>
+<p>There are two main mechanisms within Web Storage, and they behave almost identically except for their lifespan.</p>
+<hr>
+<h2 id="191-localstorage-vs-sessionstorage">19.1 <code>localStorage</code> vs. <code>sessionStorage</code></h2>
+<ul>
+<li><strong><code>localStorage</code>:</strong> Data stored here has <strong>no expiration date</strong>. It persists even if the user closes the browser, restarts their computer, and comes back a week later. (Great for: Dark mode preferences, persistent shopping carts).</li>
+<li><strong><code>sessionStorage</code>:</strong> Data stored here gets <strong>cleared immediately</strong> when the user closes that specific browser tab or window. (Great for: Multi-page form data that shouldn't be saved if the user bails out).</li>
+</ul>
+<hr>
+<h2 id="192-the-core-methods-crud-operations">19.2 The Core Methods (CRUD Operations)</h2>
+<p>Both <code>localStorage</code> and <code>sessionStorage</code> use the exact same four built-in methods. Data is always stored as a <code>key</code> (the name of the data) and a <code>value</code> (the actual data).</p>
+<p><strong>Crucial Rule:</strong> Web Storage can ONLY store <strong>Strings</strong>. It cannot natively store Numbers, Booleans, Objects, or Arrays.</p>
+<h3 id="1-saving-data-setitemkey-value">1. Saving Data: <code>setItem(key, value)</code></h3>
+<pre class="hljs"><code><div><span class="hljs-comment">// Saving simple strings</span>
+localStorage.setItem(<span class="hljs-string">'theme'</span>, <span class="hljs-string">'dark'</span>);
+localStorage.setItem(<span class="hljs-string">'username'</span>, <span class="hljs-string">'Alice_Dev'</span>);
+
+<span class="hljs-comment">// Trying to save a number (JS will silently convert the 25 to "25")</span>
+localStorage.setItem(<span class="hljs-string">'age'</span>, <span class="hljs-number">25</span>); 
+
+</div></code></pre>
+<h3 id="2-reading-data-getitemkey">2. Reading Data: <code>getItem(key)</code></h3>
+<p>Returns the value as a string. If the key doesn't exist, it returns <code>null</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> currentTheme = localStorage.getItem(<span class="hljs-string">'theme'</span>);
+<span class="hljs-built_in">console</span>.log(currentTheme); <span class="hljs-comment">// "dark"</span>
+
+<span class="hljs-comment">// Remember, it returns a string!</span>
+<span class="hljs-keyword">const</span> userAge = localStorage.getItem(<span class="hljs-string">'age'</span>);
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">typeof</span> userAge); <span class="hljs-comment">// "string"</span>
+
+</div></code></pre>
+<h3 id="3-deleting-data-removeitemkey-and-clear">3. Deleting Data: <code>removeItem(key)</code> and <code>clear()</code></h3>
+<pre class="hljs"><code><div><span class="hljs-comment">// Removes a single specific item</span>
+localStorage.removeItem(<span class="hljs-string">'username'</span>);
+
+<span class="hljs-comment">// Wipes out EVERYTHING stored for your entire website (Use with caution!)</span>
+localStorage.clear();
+
+</div></code></pre>
+<hr>
+<h2 id="193-the-golden-rule-storing-objects-and-arrays">19.3 The Golden Rule: Storing Objects and Arrays</h2>
+<p><strong>Theory:</strong> Because <code>localStorage</code> only accepts strings, what happens if you try to save a JavaScript Object or an Array?</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// The Mistake:</span>
+<span class="hljs-keyword">const</span> userProfile = { <span class="hljs-attr">name</span>: <span class="hljs-string">"Bob"</span>, <span class="hljs-attr">role</span>: <span class="hljs-string">"Admin"</span> };
+localStorage.setItem(<span class="hljs-string">'user'</span>, userProfile); 
+
+<span class="hljs-comment">// If you try to get it back, you will just get the literal string "[object Object]"</span>
+<span class="hljs-built_in">console</span>.log(localStorage.getItem(<span class="hljs-string">'user'</span>)); <span class="hljs-comment">// "[object Object]" (Your data is destroyed!)</span>
+
+</div></code></pre>
+<p><strong>The Solution:</strong> You must convert your Objects/Arrays into a <strong>JSON String</strong> before saving, and parse them back into JavaScript Objects when reading.</p>
+<ul>
+<li><strong><code>JSON.stringify(data)</code>:</strong> Converts JS data into a pure string.</li>
+<li><strong><code>JSON.parse(string)</code>:</strong> Converts a JSON string back into usable JS data.</li>
+</ul>
+<p><strong>Example (The Full Stack Standard):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> cartItems = [
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">item</span>: <span class="hljs-string">"Laptop"</span>, <span class="hljs-attr">price</span>: <span class="hljs-number">1000</span> },
+    { <span class="hljs-attr">id</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">item</span>: <span class="hljs-string">"Mouse"</span>, <span class="hljs-attr">price</span>: <span class="hljs-number">25</span> }
+];
+
+<span class="hljs-comment">// 1. Saving Complex Data</span>
+<span class="hljs-comment">// Stringify the array before saving it to localStorage</span>
+localStorage.setItem(<span class="hljs-string">'shoppingCart'</span>, <span class="hljs-built_in">JSON</span>.stringify(cartItems));
+
+<span class="hljs-comment">// 2. Retrieving Complex Data</span>
+<span class="hljs-comment">// Grab the string, and immediately parse it back into a real Array</span>
+<span class="hljs-keyword">const</span> savedCartString = localStorage.getItem(<span class="hljs-string">'shoppingCart'</span>);
+<span class="hljs-keyword">const</span> parsedCart = <span class="hljs-built_in">JSON</span>.parse(savedCartString);
+
+<span class="hljs-built_in">console</span>.log(parsedCart[<span class="hljs-number">0</span>].item); <span class="hljs-comment">// "Laptop" (It works!)</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+<h1 id="20-advanced-functions--functional-patterns">20. Advanced Functions &amp; Functional Patterns</h1>
+<p><strong>Theory:</strong> As you move deeper into Full Stack development, you stop writing basic functions that just calculate numbers, and start writing functions that manipulate, return, and compose <em>other</em> functions. These patterns are essential for writing clean, modular, and bug-free code.</p>
+<hr>
+<h2 id="201-closures">20.1 Closures</h2>
+<p><strong>Theory:</strong> A Closure is arguably the most important advanced concept in JavaScript. A closure is created when an <strong>inner function</strong> has access to the variables of its <strong>outer function</strong>, <em>even after the outer function has finished running</em>.</p>
+<p>Normally, when a function finishes executing, its variables are destroyed (Garbage Collected). But if you return an inner function that relies on those variables, JavaScript keeps that specific memory &quot;alive&quot; inside a invisible backpack called a closure.</p>
+<p><strong>Example (Data Privacy / State Memory):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createCounter</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// This variable is "private". It cannot be accessed directly from the outside.</span>
+    <span class="hljs-keyword">let</span> count = <span class="hljs-number">0</span>; 
+
+    <span class="hljs-comment">// We return an inner function. This forms a closure!</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        count++; <span class="hljs-comment">// It remembers 'count' even after createCounter is done.</span>
+        <span class="hljs-keyword">return</span> count;
+    };
+}
+
+<span class="hljs-keyword">const</span> myCounter = createCounter(); <span class="hljs-comment">// createCounter runs and finishes.</span>
+
+<span class="hljs-built_in">console</span>.log(myCounter()); <span class="hljs-comment">// 1</span>
+<span class="hljs-built_in">console</span>.log(myCounter()); <span class="hljs-comment">// 2</span>
+<span class="hljs-built_in">console</span>.log(myCounter()); <span class="hljs-comment">// 3</span>
+<span class="hljs-comment">// console.log(count);    // ERROR! count is not defined globally.</span>
+
+</div></code></pre>
+<hr>
+<h2 id="202-iife-immediately-invoked-function-expression">20.2 IIFE (Immediately Invoked Function Expression)</h2>
+<p><strong>Theory:</strong> An IIFE (pronounced &quot;iffy&quot;) is a function that runs the exact millisecond it is defined. Before ES6 modules and <code>let</code>/<code>const</code> block scoping existed, IIFEs were the primary way to keep variables from leaking into the Global Scope and causing naming collisions.</p>
+<p><strong>Syntax:</strong> You wrap the entire anonymous function in parentheses <code>()</code>, and then immediately call it by adding <code>()</code> at the end.</p>
+<pre class="hljs"><code><div>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// Code runs immediately</span>
+})();
+
+</div></code></pre>
+<p><strong>Example (Full Stack Context - Initialization):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// This data is completely hidden from the rest of the application</span>
+(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">initializeApp</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> defaultTheme = <span class="hljs-string">"dark"</span>;
+    <span class="hljs-keyword">const</span> secretKey = <span class="hljs-string">"12345"</span>;
+    
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`App initialized with theme: <span class="hljs-subst">${defaultTheme}</span>`</span>);
+})();
+
+<span class="hljs-comment">// console.log(secretKey); // ERROR! secretKey is safely trapped inside the IIFE.</span>
+
+</div></code></pre>
+<hr>
+<h2 id="203-currying">20.3 Currying</h2>
+<p><strong>Theory:</strong> Currying is a functional programming technique where you transform a function that takes multiple arguments into a sequence of nested functions that each take a <strong>single argument</strong>.</p>
+<p>Instead of calling <code>f(a, b, c)</code>, you call <code>f(a)(b)(c)</code>. It relies heavily on closures to remember the previous arguments.</p>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Traditional Function</span>
+<span class="hljs-keyword">const</span> addTraditional = <span class="hljs-function">(<span class="hljs-params">a, b, c</span>) =&gt;</span> a + b + c;
+<span class="hljs-built_in">console</span>.log(addTraditional(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>)); <span class="hljs-comment">// 6</span>
+
+<span class="hljs-comment">// 2. Curried Function</span>
+<span class="hljs-keyword">const</span> addCurried = <span class="hljs-function">(<span class="hljs-params">a</span>) =&gt;</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">b</span>) =&gt;</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">c</span>) =&gt;</span> {
+            <span class="hljs-keyword">return</span> a + b + c; <span class="hljs-comment">// Closure remembers 'a' and 'b'</span>
+        };
+    };
+};
+
+<span class="hljs-comment">// Calling it all at once</span>
+<span class="hljs-built_in">console</span>.log(addCurried(<span class="hljs-number">1</span>)(<span class="hljs-number">2</span>)(<span class="hljs-number">3</span>)); <span class="hljs-comment">// 6</span>
+
+<span class="hljs-comment">// 3. Why is this useful? "Partial Application"</span>
+<span class="hljs-comment">// You can lock in certain arguments to create specialized functions!</span>
+<span class="hljs-keyword">const</span> addFive = addCurried(<span class="hljs-number">5</span>); 
+<span class="hljs-keyword">const</span> addFiveAndTen = addFive(<span class="hljs-number">10</span>); 
+
+<span class="hljs-built_in">console</span>.log(addFiveAndTen(<span class="hljs-number">4</span>)); <span class="hljs-comment">// 19 (5 + 10 + 4)</span>
+
+</div></code></pre>
+<hr>
+<h2 id="204-function-composition">20.4 Function Composition</h2>
+<p><strong>Theory:</strong> Composition is the process of combining two or more simple functions to build a more complex one. Instead of writing one massive function that does 10 things, you write 10 tiny functions and chain them together. The output of one function becomes the input of the next.</p>
+<p><strong>Example:</strong></p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> double = <span class="hljs-function">(<span class="hljs-params">x</span>) =&gt;</span> x * <span class="hljs-number">2</span>;
+<span class="hljs-keyword">const</span> square = <span class="hljs-function">(<span class="hljs-params">x</span>) =&gt;</span> x * x;
+
+<span class="hljs-comment">// Traditional nested calling (Reads right-to-left, which is confusing)</span>
+<span class="hljs-keyword">const</span> result1 = square(double(<span class="hljs-number">5</span>)); <span class="hljs-comment">// double(5) is 10. square(10) is 100.</span>
+
+<span class="hljs-comment">// A simple Compose function (Reads right-to-left)</span>
+<span class="hljs-keyword">const</span> compose = <span class="hljs-function">(<span class="hljs-params">func1, func2</span>) =&gt;</span> <span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> func1(func2(value));
+
+<span class="hljs-keyword">const</span> doubleThenSquare = compose(square, double);
+<span class="hljs-built_in">console</span>.log(doubleThenSquare(<span class="hljs-number">5</span>)); <span class="hljs-comment">// 100</span>
+
+</div></code></pre>
+<blockquote>
+<p><strong>Watch Out:</strong> &gt; In modern React and Redux, you will see utility functions like <code>compose()</code> or <code>pipe()</code> used constantly to wrap components in multiple layers of logic (like authentication, styling, and data fetching) without creating a messy &quot;Pyramid of Doom.&quot;</p>
+</blockquote>
+<hr>
+<h2 id="205-generator-functions">20.5 Generator Functions</h2>
+<p><strong>Theory:</strong> A normal function runs from top to bottom without stopping. A Generator Function is special: it can be <strong>paused</strong> right in the middle of executing, yield a value to the outside world, and then be <strong>resumed</strong> later right where it left off.</p>
+<p><strong>Syntax:</strong> You define it using an asterisk <code>function*</code> and pause it using the <code>yield</code> keyword.</p>
+<p><strong>Example (Generating unique IDs):</strong></p>
+<pre class="hljs"><code><div><span class="hljs-comment">// 1. Define the generator</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">idMaker</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">let</span> id = <span class="hljs-number">1</span>;
+    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) { <span class="hljs-comment">// Normally an infinite loop crashes JS. Generators make it safe!</span>
+        <span class="hljs-keyword">yield</span> id;  <span class="hljs-comment">// Pauses here and returns the 'id'</span>
+        id++;      <span class="hljs-comment">// This runs when the function is resumed</span>
+    }
+}
+
+<span class="hljs-comment">// 2. Initialize it</span>
+<span class="hljs-keyword">const</span> generateId = idMaker();
+
+<span class="hljs-comment">// 3. Use the .next() method to pull values one by one</span>
+<span class="hljs-built_in">console</span>.log(generateId.next().value); <span class="hljs-comment">// 1</span>
+<span class="hljs-built_in">console</span>.log(generateId.next().value); <span class="hljs-comment">// 2</span>
+<span class="hljs-built_in">console</span>.log(generateId.next().value); <span class="hljs-comment">// 3</span>
+
+<span class="hljs-comment">// You can pause for 10 minutes, run other code, and then call it again.</span>
+<span class="hljs-comment">// It will remember that the next number is 4!</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div></div></code></pre>
+
+</body>
+</html>

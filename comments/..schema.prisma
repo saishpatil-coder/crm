@@ -1,3 +1,44 @@
+
+model Voter {
+  id              Int            @id @default(autoincrement())
+  tenantId        Int
+  boothId         Int
+  voterIdNumber   String
+  name            String
+  age             Int?
+  gender          String?
+  caste           String?
+  houseNumber     String?
+  addressLine1    String?
+  addressLine2    String?
+  mobileNumber    String?
+  isAlive         Boolean        @default(true)
+  hasVoted        Boolean        @default(false)
+  supportStatus   SupportStatus  @default(UNKNOWN)
+  isStarVoter     Boolean        @default(false)
+  isInfluencer    Boolean        @default(false)
+  familyId        Int?
+  notes           String?
+  lastUpdatedBy   Int?
+  lastUpdatedAt   DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  isDeleted       Boolean        @default(false)
+
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  booth           Booth          @relation(fields: [boothId], references: [id])
+  family          Family?        @relation(fields: [familyId], references: [id])
+  updateLogs      VoterUpdateLog[]
+
+  @@unique([tenantId, voterIdNumber])
+  @@index([tenantId])
+  @@index([boothId])
+  @@index([caste])
+  @@index([supportStatus])
+  @@index([hasVoted])
+  @@index([isStarVoter])
+}
+
+
 generator client {
   provider = "prisma-client-js"
 }
