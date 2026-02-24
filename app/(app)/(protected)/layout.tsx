@@ -7,8 +7,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main scrollable content area. 
         pb-20 ensures the content doesn't get hidden behind the 16px (4rem) Bottom Nav 
       */}
-      <Header />
-      <main className="flex-1 overflow-y-auto pb-20 pt-16">{children}</main>
+      {/* <Header /> */}
+      <main className="flex-1 overflow-y-auto pb-20">{children}</main>
 
       {/* The Sticky Navigation */}
       <BottomNav />

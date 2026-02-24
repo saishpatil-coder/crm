@@ -1,13 +1,10 @@
-export default function Loading() {
+import ClassyLoader from "@/components/ClassyLoader";
+
+export default function GlobalLoading() {
   return (
-    <div className="flex justify-center items-center h-screen">
-      {/* Subtle fade-in pulse effect */}
-      <div className="animate-pulse flex space-x-4">
-        <div className="rounded-full bg-slate-200 h-10 w-10"></div>
-        <div className="flex-1 space-y-6 py-1">
-          <div className="h-2 bg-slate-200 rounded"></div>
-        </div>
-      </div>
+    // This wrapper centers the loader on the full screen
+    <div className="flex h-[calc(100vh-200px)] w-full items-center justify-center">
+      <ClassyLoader size={80} color="#3b82f6" />
     </div>
   );
 }

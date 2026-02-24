@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { LocalTenant } from "@/lib/db";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const dict = {
   en: {
@@ -53,10 +54,15 @@ const dict = {
 };
 
 export default function SubAdminDashboard() {
-  const { user } = useAuth();
+  const { user,activeRole } = useAuth();
   const router = useRouter();
   const { lang } = useLanguage();
   const t = dict[lang as keyof typeof dict];
+  useEffect(()=>{
+    if(activeRole === "WORKER"){
+      router.push("/mobile")
+    }
+  },[activeRole])
 
   // Fetch from the standard /api/tenants route!
   // It will automatically store this single record in the local 'tenants' table.

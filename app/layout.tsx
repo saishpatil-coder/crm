@@ -5,6 +5,7 @@ import "./globals.css";
 import PwaGuard from "@/components/PwaGuard";
 import InstallPrompt from "@/components/InstallPrompt";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ColorProvider } from "@/context/ColorContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,15 +45,16 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-         <LanguageProvider>
-           {/* <PwaGuard>
+          <ColorProvider>
+            <LanguageProvider>
+              {/* <PwaGuard>
         {children}
         </PwaGuard> */}
-        {children}
-        {/* <InstallPrompt/> */}
-         </LanguageProvider>
+              {children}
+              {/* <InstallPrompt/> */}
+            </LanguageProvider>
+          </ColorProvider>
         </AuthProvider>
-
       </body>
     </html>
   );

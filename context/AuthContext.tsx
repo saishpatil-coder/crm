@@ -22,6 +22,8 @@ interface AuthContextType {
   login: (token: string, userData: User) => void;
   logout: () => void;
   isLoading: boolean;
+  activeRole: string | null;
+  switchRole: (newRole: "SUB_ADMIN" | "WORKER") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,12 +31,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Start as loading
+  const [activeRole, setActiveRole] = useState<string | null>(null);
   // 🔥 Restore from localStorage on app load
   useEffect(() => {
     const storedUser = localStorage.getItem("auth_user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const u = JSON.parse(storedUser);
+        setUser(u);
+        const savedViewMode = localStorage.getItem("activeRole");
+        setActiveRole(savedViewMode || u.role);
       } catch (e) {
         console.error("Failed to parse stored user", e);
       }
@@ -45,13 +51,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (token: string, userData: User) => {
     setUser(userData);
-
+setActiveRole(userData.role || null);
+localStorage.setItem("activeRole", userData.role || "");
     // Store user for offline restore
     localStorage.setItem("auth_user", JSON.stringify(userData));
+  };
+  // NEW: The function to swap modes
+  const switchRole = (newRole: "SUB_ADMIN" | "WORKER") => {
+    setActiveRole(newRole);
+    localStorage.setItem("activeRole", newRole);
+
+    // Optional: Add a tiny vibration on mobile to make the switch feel physical
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   };
 
   const logout = async () => {
     setUser(null);
+    setActiveRole(null); // Clear from state
     // 3. Clear all Dexie Database Tables
     try {
       await Promise.all([
@@ -65,12 +83,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Failed to clear local database during logout:", error);
     }
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("activeRole"); // 🔥 NEW: Wipe view mode on logout
     console.trace("🚨 I AM REDIRECTING TO LOGIN! 🚨");
     window.location.href = "/login";
-  };;
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isLoading, activeRole, switchRole }}
+    >
       {children}
     </AuthContext.Provider>
   );

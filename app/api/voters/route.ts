@@ -130,6 +130,9 @@ export async function GET(req: Request) {
         isVisited: true,
         hasVoted: true,
         supportLevel: true,
+        cityVillage:true,
+        caste:true,
+        serialNumber:true,
       },
       take: 1000, // Limit to 1000 for mobile performance; implement search later for more
       orderBy: {

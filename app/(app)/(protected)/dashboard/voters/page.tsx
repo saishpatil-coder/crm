@@ -1,5 +1,6 @@
 "use client";
 
+import VoterCard from "@/components/VoterCard";
 import { useLanguage } from "@/context/LanguageContext";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ const dict = {
     synced: "Synced",
     visited: "VISITED",
     pending: "PENDING",
+    unknown: "Unknown Booth", 
   },
   mr: {
     title: "मतदार यादी",
@@ -23,6 +25,7 @@ const dict = {
     synced: "सिंक झाले",
     visited: "भेट दिली",
     pending: "प्रलंबित",
+    unknown: "अज्ञात बूथ", 
   },
   hi: {
     title: "मतदाता सूची",
@@ -32,6 +35,7 @@ const dict = {
     synced: "सिंक किया गया",
     visited: "भेंट की गई",
     pending: "लंबित",
+    unknown: "अज्ञात बूथ", 
   },
 };
 
@@ -123,55 +127,12 @@ export default function WorkerVotersPage() {
           </p>
         ) : (
           filteredVoters.map((voter) => (
-            <div
+            <VoterCard
               key={voter.id}
-              onClick={() => router.push(`/worker/voters/${voter.id}`)}
-              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 active:bg-blue-50 transition-colors cursor-pointer relative overflow-hidden"
-            >
-              {/* Status Indicator Bar */}
-              <div
-                className={`absolute left-0 top-0 bottom-0 w-1.5 ${voter.isVisited ? "bg-green-500" : "bg-orange-400"}`}
-              ></div>
-
-              <div className="pl-2">
-                <div className="flex justify-between items-start mb-1">
-                  <h2 className="font-black text-gray-900 text-lg leading-tight">
-                    {voter.fullName}
-                  </h2>
-                  <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded uppercase tracking-widest">
-                    {voter.epicNumber}
-                  </span>
-                </div>
-
-                <p className="text-xs font-bold text-gray-500 mb-3">
-                  {voter.gender === "MALE"
-                    ? "M"
-                    : voter.gender === "FEMALE"
-                      ? "F"
-                      : "O"}{" "}
-                  • {voter.age || "--"} Yrs
-                </p>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                    <span className="text-blue-500">📍</span>
-                    <span className="truncate max-w-[150px]">
-                      {voter.pollingStation || "Unknown Booth"}
-                    </span>
-                  </div>
-
-                  <span
-                    className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded ${
-                      voter.isVisited
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700"
-                    }`}
-                  >
-                    {voter.isVisited ? t.visited : t.pending}
-                  </span>
-                </div>
-              </div>
-            </div>
+              voter={voter}
+              t={t} // Pass the dictionary slice
+              onClick={() => router.push(`/mobile/voters/${voter.id}`)}
+            />
           ))
         )}
       </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSync } from "@/hooks/useSync"; // The hook we built earlier
+import { ThemeColor, useColor } from "@/context/ColorContext";
 
 const dict = {
   en: { sync: "Sync", syncing: "Syncing..." },
@@ -12,6 +13,7 @@ const dict = {
 };
 
 export default function Header() {
+  const {primaryColor} = useColor()
   const { user,isLoading } = useAuth();
   const { lang } = useLanguage();
   const { pullVoters, isSyncing } = useSync();
@@ -29,14 +31,41 @@ export default function Header() {
     console.log("routing from headnav");
     return null;
   }
+  const themeStyles: Record<ThemeColor, { gradient: string; glow: string }> = {
+    blue: {
+      gradient: "from-blue-600 via-blue-700 to-blue-900",
+      glow: "bg-blue-400",
+    },
+    green: {
+      gradient: "from-green-600 via-emerald-700 to-emerald-900",
+      glow: "bg-emerald-400",
+    },
+    orange: {
+      gradient: "from-orange-400 via-orange-500 to-orange-400",
+      glow: "bg-orange-300",
+    },
+    purple: {
+      gradient: "from-purple-600 via-purple-700 to-purple-900",
+      glow: "bg-purple-400",
+    },
+    red: {
+      gradient: "from-red-600 via-red-700 to-red-900",
+      glow: "bg-red-400",
+    },
+  };
+
+  // Fallback to blue if color is undefined
+  const currentTheme =themeStyles[primaryColor] || themeStyles.orange;
 
   return (
-    <header className="fixed top-0 w-full bg-blue-600 text-white shadow-md z-50 h-16 md:max-w-md md:mx-auto md:left-0 md:right-0">
+    <header
+      className={`fixed top-0 w-full bg-linear-to-r ${currentTheme.gradient} text-white shadow-md z-50 h-16 md:max-w-md md:mx-auto md:left-0 md:right-0`}
+    >
       <div className="flex justify-between items-center h-full px-4">
         {/* Settings Icon */}
         <Link
           href="/settings"
-          className="p-2 -ml-2 active:bg-blue-700 rounded-full transition-colors"
+          className={`p-2 -ml-2 active:${currentTheme.glow} rounded-full transition-colors`}
         >
           <svg
             className="w-6 h-6"

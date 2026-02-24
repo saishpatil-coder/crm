@@ -26,7 +26,6 @@ export async function GET(req: Request) {
         mobileNumber: true,
         status: true,
         // This is where the magic happens for your UI's micro-stats
-       
       },
       orderBy: {
         createdAt: "desc", // Show newest workers at the top

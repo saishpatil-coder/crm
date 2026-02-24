@@ -22,7 +22,6 @@ export async function GET() {
           select: {
             users: true,
             voters: true,
-            booths: true,
           },
         },
       },
