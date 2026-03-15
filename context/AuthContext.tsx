@@ -12,7 +12,7 @@ import {
 interface User {
   id: string;
   mobileNumber: string;
-  role?: string ;
+  role?: string;
   tenantId?: number;
   name?: string;
 }
@@ -51,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (token: string, userData: User) => {
     setUser(userData);
-setActiveRole(userData.role || null);
-localStorage.setItem("activeRole", userData.role || "");
+    setActiveRole(userData.role || null);
+    localStorage.setItem("activeRole", userData.role || "");
     // Store user for offline restore
     localStorage.setItem("auth_user", JSON.stringify(userData));
   };

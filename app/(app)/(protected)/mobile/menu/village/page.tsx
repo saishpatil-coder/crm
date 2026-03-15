@@ -84,7 +84,8 @@ export default function ByVillagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-24 md:max-w-md md:mx-auto md:border-x border-gray-200">
+    <div className="bg-gray-100 flex flex-col">
+      {" "}
       {/* Header */}
       <div className="bg-white px-4 pt-6 pb-4 shadow-sm sticky top-0 z-10 border-b border-gray-100 flex items-center gap-3">
         <button
@@ -100,7 +101,6 @@ export default function ByVillagePage() {
           <p className="text-xs font-bold text-gray-500 mt-0.5">{t.subtitle}</p>
         </div>
       </div>
-
       <div className="p-4 flex flex-col gap-3">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center mt-10 text-gray-500 font-bold">

@@ -116,13 +116,10 @@ export default function BrowseMenuPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-24 md:max-w-md md:mx-auto md:border-x border-gray-200">
+    <div className="bg-gray-100 flex flex-col">
+      {" "}
       {/* Header */}
-      <CurvedHeader
-        title={t.title}
-        subtitle={t.subtitle}
-      />
-
+      <CurvedHeader title={t.title} subtitle={t.subtitle} />
       <div className="p-2">
         {/* LOCATION GRID */}
         <SectionTitle title={t.byLocation} />

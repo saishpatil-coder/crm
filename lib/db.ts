@@ -17,6 +17,9 @@ export interface LocalVoter {
   caste: string | null;
   serialNumber?: number | string | null;
   photoUrl?: string | null;
+  isAlive?: boolean;
+  notes?: string;
+  houseNumber?: string;
 }
 
 export interface Worker {
@@ -34,7 +37,7 @@ export interface Worker {
 
 export interface SyncQueueItem {
   id?: number;
-  action: "UPDATE_VOTER_STATUS" | "MARK_VOTED";
+  action: "UPDATE_VOTER" | "MARK_VOTED";
   payload: any;
   createdAt: number;
 }
@@ -67,7 +70,7 @@ export class CampaignDatabase extends Dexie {
     this.version(3).stores({
       // & epicNumber ensures it is a unique index offline too
       voters:
-        "id,serialNumber, &epicNumber, fullName, cityVillage, pollingStation, ward, isVisited, hasVoted, supportLevel, caste",
+        "id,serialNumber, &epicNumber, fullName, cityVillage, pollingStation, ward, isVisited, hasVoted, supportLevel, caste, isAlive, notes, houseNumber",
       syncQueue: "++id, action, createdAt",
       tenants: "&id, candidateName, constituencyName",
       workers: "id, tenantId, roleId, name, mobileNumber, status",

@@ -174,6 +174,13 @@ function MobileLoginContent() {
       else if (role === "WORKER") router.push("/mobile");
     }
   }, [searchParams, router, user, logout]);
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (user.role === "WORKER") router.push("/mobile");
+      else if (user.role === "SUB_ADMIN") router.push("/dashboard");
+      else if (user.role === "MASTER_ADMIN") router.push("/admin");
+    }
+  }, [user, isLoading, router]);
 
   // CRITICAL FIX: Ensure valid JSX is returned
   if (loading) {

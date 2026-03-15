@@ -1,0 +1,33 @@
+// {
+//   "files.exclude": {
+//     "**/node_modules": true,
+//     "**/.git": true,
+//     "**/dist": true,
+//     "**/build": true,
+//     "**/.sql": true,
+//     "**/.json": true,
+//     "**/raj":true,
+//     // "**/public":true,
+//     "**/.next":true,
+//     "**/.gitignore":true,
+//     "**/lib":true,
+//     "**/hooks":true,
+//     // "**/context":true,
+//     // "**/api":true,
+//     // "**/login":true,
+//     "**/comments":true,
+//         "**/*.log": true,
+//     "**/*.sql": true,
+//     "**/*.dump": true,
+
+//     "**/.env": true,
+//     "**/README.md": true,
+
+//     "**/middleware.ts": true,
+//     "**/sw.ts": true,
+//     "**/next.config.ts": true,
+//     "**/eslint.config.mjs": true,
+//     "**/postcss.config.mjs": true
+
+//   }
+// }
