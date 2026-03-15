@@ -200,7 +200,7 @@ export default function VoterEditPage() {
 
   return (
     // 1. Native Stacked Layout (h-[100dvh])
-    <div className="h-[100dvh] bg-gray-100 flex flex-col overflow-hidden md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
+    <div className="h-dvh bg-gray-100 flex flex-col overflow-hidden md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
       
       {/* --- Header (shrink-0) --- */}
       <div className={`${themeClass} px-4 pt-6 pb-4 shadow-md flex items-center gap-3 shrink-0`}>
@@ -297,7 +297,7 @@ export default function VoterEditPage() {
                   value={formData.notes}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder="Any specific requests or feedback?"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:bg-white focus:border-blue-500 outline-none transition-colors min-h-[80px]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:bg-white focus:border-blue-500 outline-none transition-colors min-h-20"
                 />
               </div>
             </div>

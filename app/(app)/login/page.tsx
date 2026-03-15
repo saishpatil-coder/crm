@@ -184,7 +184,7 @@ function MobileLoginContent() {
   // Show a clean loading state while AuthContext checks local storage
   if (isAuthLoading) {
     return (
-      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center gap-3">
+      <div className="min-h-dvh bg-gray-50 flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <div className="text-gray-500 font-bold text-sm">
           Verifying session...
@@ -198,7 +198,7 @@ function MobileLoginContent() {
 
   return (
     // Replaced min-h-screen with min-h-[100dvh] for better mobile browser support
-    <div className="min-h-[100dvh] bg-gray-50 flex flex-col px-6 py-8 md:hidden">
+    <div className="min-h-dvh bg-gray-50 flex flex-col px-6 py-8 md:hidden">
       {/* Language Selector */}
       <div className="flex justify-end mb-8 shrink-0">
         <select

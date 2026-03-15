@@ -193,7 +193,7 @@ export default function VoterProfileViewPage() {
             className={`absolute top-0 left-0 w-1.5 h-full ${voter.isVisited ? "bg-green-500" : "bg-orange-400"}`}
           ></div>
           <div className="flex gap-4 items-center pl-2">
-            <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 border border-gray-200 text-2xl">
+            <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 text-2xl">
               {voter.photoUrl ? (
                 <img
                   src={voter.photoUrl}
