@@ -77,7 +77,9 @@ type Language = keyof typeof dict;
 function MobileLoginContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { login, user, logout, isLoading: loading } = useAuth();
+
+  // Renamed context loading to isAuthLoading to avoid confusion
+  const { login, user, logout, isLoading: isAuthLoading } = useAuth();
 
   // State
   const [lang, setLang] = useState<Language>("mr");
@@ -89,17 +91,38 @@ function MobileLoginContent() {
   // Flow States
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Local submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const t = dict[lang];
 
-  // STEP 1: Check if user exists and if they need a password
+  // --- SINGLE UNIFIED REDIRECT EFFECT ---
+  useEffect(() => {
+    if (isAuthLoading) return; // Do nothing while context is initializing
+
+    const errorType = searchParams.get("error");
+    if (errorType === "session_expired") {
+      logout();
+      // Remove the query param so we don't infinitely loop
+      router.replace("/login");
+      return;
+    }
+
+    if (user) {
+      if (user.role === "WORKER") router.push("/mobile");
+      else if (user.role === "SUB_ADMIN") router.push("/dashboard");
+      else if (user.role === "MASTER_ADMIN") router.push("/admin");
+    }
+  }, [user, isAuthLoading, router, searchParams, logout]);
+
+  // STEP 1: Check if user exists
   const handleCheckUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (phone.length < 10) return;
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMsg("");
 
     try {
@@ -116,7 +139,7 @@ function MobileLoginContent() {
         error.response?.data?.error || error.message || t.genericError,
       );
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -130,7 +153,7 @@ function MobileLoginContent() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMsg("");
 
     try {
@@ -151,51 +174,35 @@ function MobileLoginContent() {
       };
 
       login(token, userData);
-      router.push("/");
+      // Wait for the AuthContext effect to catch the user and route them
     } catch (error: any) {
       setErrorMsg(error.response?.data?.error || t.genericError);
-    } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    const errorType = searchParams.get("error");
-
-    if (errorType === "session_expired") {
-      logout();
-      router.push("/login");
-    }
-
-    if (user) {
-      const role = user.role;
-      if (role === "MASTER_ADMIN") router.push("/admin");
-      else if (role === "SUB_ADMIN") router.push("/dashboard");
-      else if (role === "WORKER") router.push("/mobile");
-    }
-  }, [searchParams, router, user, logout]);
-  useEffect(() => {
-    if (!isLoading && user) {
-      if (user.role === "WORKER") router.push("/mobile");
-      else if (user.role === "SUB_ADMIN") router.push("/dashboard");
-      else if (user.role === "MASTER_ADMIN") router.push("/admin");
-    }
-  }, [user, isLoading, router]);
-
-  // CRITICAL FIX: Ensure valid JSX is returned
-  if (loading) {
+  // Show a clean loading state while AuthContext checks local storage
+  if (isAuthLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500 font-medium">Loading...</div>
+      <div className="min-h-[100dvh] bg-gray-50 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-500 font-bold text-sm">
+          Verifying session...
+        </div>
       </div>
     );
   }
 
+  // If we have a user and we are NOT loading, return nothing because the useEffect will push them away
+  if (user) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col px-6 py-8 md:hidden">
-      <div className="flex justify-end mb-8">
+    // Replaced min-h-screen with min-h-[100dvh] for better mobile browser support
+    <div className="min-h-[100dvh] bg-gray-50 flex flex-col px-6 py-8 md:hidden">
+      {/* Language Selector */}
+      <div className="flex justify-end mb-8 shrink-0">
         <select
-          className="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-md text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={lang}
           onChange={(e) => {
             setLang(e.target.value as Language);
@@ -208,15 +215,15 @@ function MobileLoginContent() {
         </select>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center mb-20">
-        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
+      <div className="flex-1 flex flex-col justify-center mb-10">
+        <h1 className="text-2xl font-black text-gray-900 mb-2">
           {step === 1
             ? t.welcome
             : isSettingPassword
               ? t.setPasswordTitle
               : t.welcomeBack}
         </h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-sm font-bold text-gray-500 mb-6">
           {step === 1
             ? t.subtitle
             : isSettingPassword
@@ -225,27 +232,27 @@ function MobileLoginContent() {
         </p>
 
         {errorMsg && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm font-medium rounded-lg">
+          <div className="mb-6 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm font-bold rounded shadow-sm">
             {errorMsg}
           </div>
         )}
 
-        {/* STEP 1 FORM: Ask for Number */}
+        {/* --- STEP 1 FORM: Ask for Number --- */}
         {step === 1 && (
           <form onSubmit={handleCheckUser} className="flex flex-col gap-5">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
                 {t.phoneLabel}
               </label>
-              <div className="flex shadow-sm rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-                <span className="flex items-center justify-center bg-gray-100 px-4 text-gray-600 font-medium border-r border-gray-300">
+              <div className="flex shadow-sm rounded-xl overflow-hidden border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
+                <span className="flex items-center justify-center bg-gray-50 px-4 text-gray-600 font-black border-r-2 border-gray-200">
                   +91
                 </span>
                 <input
                   type="tel"
                   maxLength={10}
                   required
-                  className="w-full h-14 px-4 text-lg font-medium text-gray-900 focus:outline-none bg-white"
+                  className="w-full h-14 px-4 text-lg font-bold text-gray-900 focus:outline-none bg-transparent"
                   placeholder={t.phonePlaceholder}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
@@ -255,27 +262,31 @@ function MobileLoginContent() {
 
             <button
               type="submit"
-              disabled={phone.length < 10 || isLoading}
-              className="mt-4 w-full h-14 bg-blue-600 text-white text-lg font-bold rounded-lg shadow-md disabled:bg-blue-300 active:bg-blue-700 transition-colors flex items-center justify-center"
+              disabled={phone.length < 10 || isSubmitting}
+              className="mt-2 w-full h-14 bg-blue-600 text-white text-lg font-black rounded-xl shadow-md disabled:bg-blue-300 active:scale-[0.98] transition-all flex items-center justify-center"
             >
-              {isLoading ? "..." : t.next}
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                t.next
+              )}
             </button>
           </form>
         )}
 
-        {/* STEP 2 FORM: Password Entry or Creation */}
+        {/* --- STEP 2 FORM: Password Entry or Creation --- */}
         {step === 2 && (
           <form onSubmit={handleSubmitAction} className="flex flex-col gap-5">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
                 {isSettingPassword ? t.setPasswordTitle : t.passwordLabel}
               </label>
-              <div className="relative flex shadow-sm rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
+              <div className="relative shadow-sm rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  autoFocus
-                  className="w-full h-14 pl-4 pr-16 text-lg font-medium text-gray-900 focus:outline-none bg-transparent"
+                  // Removed autoFocus to prevent aggressive mobile keyboard popups
+                  className="w-full h-14 pl-4 pr-20 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
                   placeholder={t.passwordPlaceholder}
                   value={password}
                   onChange={(e) => {
@@ -286,7 +297,7 @@ function MobileLoginContent() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-0 h-full px-4 text-sm font-semibold text-blue-600 active:text-blue-800 bg-transparent"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-black uppercase tracking-wider text-blue-600 bg-blue-50 rounded-md active:bg-blue-100"
                 >
                   {showPassword ? t.hide : t.show}
                 </button>
@@ -296,14 +307,14 @@ function MobileLoginContent() {
             {/* Extra Confirm Field ONLY if setting password */}
             {isSettingPassword && (
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 mt-2">
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2 pl-1">
                   {t.confirmLabel}
                 </label>
-                <div className="relative flex shadow-sm rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
+                <div className="relative shadow-sm rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
-                    className="w-full h-14 px-4 text-lg font-medium text-gray-900 focus:outline-none bg-transparent"
+                    className="w-full h-14 pl-4 pr-10 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
                     placeholder={t.confirmPlaceholder}
                     value={confirmPassword}
                     onChange={(e) => {
@@ -311,6 +322,12 @@ function MobileLoginContent() {
                       setErrorMsg("");
                     }}
                   />
+                  {/* Visual match indicator */}
+                  {confirmPassword.length > 0 && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg">
+                      {password === confirmPassword ? "✅" : "❌"}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -320,15 +337,21 @@ function MobileLoginContent() {
               disabled={
                 password.length === 0 ||
                 (isSettingPassword && confirmPassword.length === 0) ||
-                isLoading
+                isSubmitting
               }
-              className="mt-4 w-full h-14 bg-blue-600 text-white text-lg font-bold rounded-lg shadow-md disabled:bg-blue-300 active:bg-blue-700 transition-colors flex items-center justify-center"
+              className="mt-2 w-full h-14 bg-blue-600 text-white text-lg font-black rounded-xl shadow-md disabled:bg-blue-300 active:scale-[0.98] transition-all flex items-center justify-center"
             >
-              {isLoading ? "..." : isSettingPassword ? t.setAndLogin : t.login}
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : isSettingPassword ? (
+                t.setAndLogin
+              ) : (
+                t.login
+              )}
             </button>
 
-            {/* Back button to fix typos in phone number */}
-            <div className="flex justify-center mt-4">
+            {/* Back button */}
+            <div className="flex justify-center mt-2">
               <button
                 type="button"
                 onClick={() => {
@@ -337,7 +360,7 @@ function MobileLoginContent() {
                   setConfirmPassword("");
                   setErrorMsg("");
                 }}
-                className="text-sm font-semibold text-gray-500 active:text-gray-800"
+                className="text-xs font-black uppercase tracking-widest text-gray-400 active:text-gray-800 py-2 px-4"
               >
                 {t.back}
               </button>
@@ -349,13 +372,12 @@ function MobileLoginContent() {
   );
 }
 
-// Wrap in Suspense for Next.js best practices with useSearchParams
 export default function MobileLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          Loading...
+        <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
       }
     >
