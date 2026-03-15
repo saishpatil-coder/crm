@@ -30,6 +30,34 @@ export function useOfflineData<T>(
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   }, []);
+  const pushQueueToServer = async () => {
+    if (!navigator.onLine) return false;
+
+    try {
+      // Grab everything waiting in the queue
+      const pendingItems = await localDb.syncQueue.toArray();
+      if (pendingItems.length === 0) return true; // Nothing to push!
+
+      console.log(`Pushing ${pendingItems.length} items to server...`);
+
+      // Send them to the new endpoint we just built
+      const response = await apiClient.post("/sync/push", {
+        syncItems: pendingItems,
+      });
+
+      if (response.data.success) {
+        // Only if the server successfully processed them, we delete them from the local phone queue
+        const itemIds = pendingItems.map((item) => item.id!);
+        await localDb.syncQueue.bulkDelete(itemIds);
+        console.log("Sync Queue successfully cleared!");
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to push sync queue:", error);
+      return false;
+    }
+  };
 
   // Initialize lastSynced from localStorage
   useEffect(() => {
@@ -45,6 +73,10 @@ export function useOfflineData<T>(
       const syncKey = `${dbTableName}_last_synced`;
 
       try {
+        // --- CRITICAL FIX: ALWAYS TRY TO PUSH FIRST IF ONLINE ---
+        if (navigator.onLine) {
+          await pushQueueToServer();
+        }
         // 1. STRATEGY: CACHE FIRST
         if (!forceNetwork) {
           // @ts-ignore - Dexie dynamic table typing workaround
@@ -55,6 +87,7 @@ export function useOfflineData<T>(
             setIsSyncing(false);
             return;
           }
+          
         }
 
         // 2. STRATEGY: NETWORK ON DEMAND
