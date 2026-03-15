@@ -25,7 +25,6 @@ export async function GET(
           select: {
             users: true,
             voters: true,
-            booths: true,
           },
         },
       },
@@ -121,7 +120,7 @@ export async function PATCH(
         data: updateData,
         include: {
           _count: {
-            select: { users: true, voters: true, booths: true },
+            select: { users: true, voters: true},
           },
         },
       });

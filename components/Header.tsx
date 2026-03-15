@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { useSync } from "@/hooks/useSync"; // The hook we built earlier
 import { ThemeColor, useColor } from "@/context/ColorContext";
 
 const dict = {
@@ -16,7 +15,6 @@ export default function Header() {
   const {primaryColor} = useColor()
   const { user,isLoading } = useAuth();
   const { lang } = useLanguage();
-  const { pullVoters, isSyncing } = useSync();
   const t = dict[lang];
 
 
