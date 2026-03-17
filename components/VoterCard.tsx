@@ -24,17 +24,62 @@ export default function VoterCard({ voter, t, onClick }: VoterCardProps) {
   // Default text for share button
   const shareText = t.shareBtn || "SHARE SLIP";
 
+  // --- WhatsApp Share Logic ---
+  const handleShareWhatsApp = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent clicking the parent card and routing to the profile
+
+    // 1. Construct a beautiful, readable message
+    const message = `
+*VOTER SLIP / मतदार पावती*
+━━━━━━━━━━━━━━━━━━━
+*Name:* ${voter.fullName}
+*EPIC No:* ${voter.epicNumber}
+*Serial No:* ${voter.serialNumber || "--"}
+
+*Booth details / मतदान केंद्र:*
+📍 ${voter.pollingStation || "--"}
+
+*Ward:* ${voter.ward || "--"}
+*Address:* ${voter.houseNumber ? `House No: ${voter.houseNumber}, ` : ""}${voter.cityVillage || "--"}
+━━━━━━━━━━━━━━━━━━━
+Please carry your EPIC card or valid ID proof for voting.
+कृपया मतदानासाठी तुमचे ओळखपत्र सोबत ठेवा.
+    `.trim();
+
+    // 2. Encode for URL safety
+    const encodedMessage = encodeURIComponent(message);
+
+    // 3. Construct WhatsApp URL
+    // If we have their mobile number, pre-fill the chat. Otherwise, just open the app selector.
+    let whatsappUrl = "";
+    if (voter.mobileNumber && voter.mobileNumber.length >= 10) {
+      // Ensure the number has the country code. Assuming India (+91)
+      let phone = voter.mobileNumber.replace(/\D/g, "");
+      if (phone.length === 10) phone = `91${phone}`;
+
+      whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+    } else {
+      whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    }
+
+    // 4. Open in new tab/app
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 active:bg-blue-50 transition-colors cursor-pointer relative overflow-hidden flex gap-3 items-center">
+    <div
+      onClick={onClick}
+      className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 active:bg-blue-50 transition-colors cursor-pointer relative overflow-hidden flex gap-3 items-center"
+    >
       {/* Color-coded Status Indicator Bar */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 ${
+        className={`absolute left-0 top-0 bottom-0 w-1.5 ${
           voter.isVisited ? "bg-green-500" : "bg-orange-400"
         }`}
       ></div>
 
       {/* Image Square Placeholder - 48x48 */}
-      <div className="w-12 h-12 bg-gray-100 border border-gray-200 rounded-lg flex-shrink-0 overflow-hidden ml-1 flex items-center justify-center">
+      <div className="w-12 h-12 bg-gray-100 border border-gray-200 rounded-lg flex-shrink-0 overflow-hidden ml-1.5 flex items-center justify-center">
         {voter.photoUrl ? (
           <img
             src={voter.photoUrl}
@@ -47,40 +92,34 @@ export default function VoterCard({ voter, t, onClick }: VoterCardProps) {
       </div>
 
       {/* Voter Details Column */}
-      <div
-        className="flex-1 flex flex-col justify-center min-w-0"
-        onClick={onClick}
-      >
+      <div className="flex-1 flex flex-col justify-center min-w-0">
         <div className="flex justify-between items-center gap-2">
-          {/* Name & Serial Container - Given more vertical breathing room */}
+          {/* Name & Serial Container */}
           <div className="flex flex-col min-w-0 py-0.5">
             <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none mb-1">
               SR. NO: {voter.serialNumber || "--"}
             </p>
 
-            {/* NAME: Increased size, better line-height, allows 2 lines */}
             <h2 className="font-black text-gray-900 text-[15px] leading-tight line-clamp-2 pr-1 min-h-6">
               {voter.fullName}
             </h2>
 
             <p className="text-[10px] font-bold text-gray-500 mt-1.5 leading-none">
-              {displayGender} • {displayAge}
+              {displayGender} • {displayAge} •{" "}
+              <span className="uppercase">{voter.epicNumber}</span>
             </p>
           </div>
 
           {/* WhatsApp Share Button */}
           <button
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent clicking the parent card
-              console.log("Share slip clicked for:", voter.epicNumber);
-            }}
-            className="flex items-center justify-center w-10 h-10 bg-green-50 text-green-600 rounded-full active:bg-green-100 transition-colors shrink-0"
+            onClick={handleShareWhatsApp}
+            className="flex items-center justify-center w-11 h-11 bg-green-50 text-green-600 rounded-full active:bg-green-100 active:scale-95 transition-all shrink-0 border border-green-100 shadow-sm"
             aria-label={shareText}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
+              width="22"
+              height="22"
               viewBox="0 0 24 24"
               fill="currentColor"
             >
