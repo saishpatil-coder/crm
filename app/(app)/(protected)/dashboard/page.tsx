@@ -74,7 +74,10 @@ export default function SubAdminDashboard() {
     isSyncing,
     lastSyncedText,
   } = useOfflineData<LocalTenant>("/tenants", "tenants");
-
+  const {
+    data:voters,
+    refresh:voterRefresh
+  }= useOfflineData("/voters","voters")
   // Since the API returns an array of one, we grab the first item.
   const campaign = tenants?.[0] || ({} as any);
   const workersCount = campaign._count?.users || 0;
@@ -95,7 +98,10 @@ export default function SubAdminDashboard() {
             </p>
           </div>
           <button
-            onClick={refresh}
+            onClick={()=>{
+              refresh();
+              voterRefresh();
+            }}
             disabled={isSyncing}
             className="p-2 bg-gray-200 text-gray-700 rounded-full active:bg-gray-300 transition-colors"
           >

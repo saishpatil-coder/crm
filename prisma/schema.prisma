@@ -66,6 +66,7 @@ model Role {
 model User {
   id              Int       @id @default(autoincrement())
   tenantId        Int?
+  assignedBooths String[] @default([])
   roleId          Int
   name            String
   mobileNumber    String    @unique

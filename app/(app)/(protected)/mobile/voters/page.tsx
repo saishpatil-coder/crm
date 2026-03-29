@@ -64,12 +64,12 @@ export default function FilteredVoterListPage() {
     refresh,
     isOnline,
   } = useOfflineData<any>("/voters", "voters"); // Make sure your endpoint is correct!
-
+console.log(allVoters[0])
   // 2. UseMemo so we only recalculate the filtered list when the raw data or URL changes
   const filteredVoters = useMemo(() => {
     return allVoters.filter((voter) => {
       if (!filterType || !filterValue) return true;
-
+console.log(filterType," ",filterValue)
       const val = filterValue === t.unknown ? null : filterValue;
 
       switch (filterType) {
@@ -108,10 +108,11 @@ export default function FilteredVoterListPage() {
           if (voter.age <= 40) return val === "26-40";
           if (voter.age <= 60) return val === "41-60";
           return val === "60+";
-        case "visited":
-          return voter.isVisited === true;
-        case "pending":
-          return voter.isVisited === false;
+        case "status":
+          return (
+            (voter.isVisited === true && filterValue === "visited") ||
+            (voter.isVisited === false && filterValue === "pending")
+          );
         default:
           return true;
       }

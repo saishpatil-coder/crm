@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     // 1. Destructure the new `role` field from the body
-    const { name, mobileNumber, password, role } = await req.json();
+    const { name, mobileNumber, password, role, assignedBooths } = await req.json();
 
     if (!name || !mobileNumber || !password) {
       return NextResponse.json(
@@ -109,6 +109,7 @@ export async function POST(req: Request) {
         roleId: dbRole.id, // Will be either SUB_ADMIN or WORKER
         tenantId: currentUser.tenantId,
         status: true,
+        assignedBooths: assignedBooths || [],
       },
       select: {
         id: true,

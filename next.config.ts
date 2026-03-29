@@ -9,8 +9,15 @@ const withSerwist = withSerwistInit({
   // Disable in development so it doesn't cache your hot-reloads
   disable: process.env.NODE_ENV === "development",
 });
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -73,8 +73,8 @@ export async function PATCH(
       partyName,
       constituencyName,
       constituencyNumber,
-      candidateImageBase64,
-      partyLogoBase64,
+      candidatePhotoUrl: candidateImageBase64,
+      partyLogoUrl: partyLogoBase64,
       newPassword,
     } = body;
 
@@ -146,6 +146,77 @@ export async function PATCH(
     console.error("Failed to update tenant:", error);
     return NextResponse.json(
       { error: "Failed to update campaign details" },
+      { status: 500 },
+    );
+  }
+}
+
+
+
+// app/api/admin/tenants/[id]/route.ts
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const headerList = await headers();
+    const userHeader = headerList.get("x-user");
+
+    if (!userHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const resolvedParams = await params;
+    const tenantId = parseInt(resolvedParams.id);
+
+    if (isNaN(tenantId)) {
+      return NextResponse.json(
+        { error: "Invalid Campaign ID" },
+        { status: 400 },
+      );
+    }
+
+    // Safely delete the tenant and all its associated data using a transaction
+    await prisma.$transaction(
+      async (tx) => {
+        // 1. Delete all Voters associated with this campaign
+        await tx.voter.deleteMany({
+          where: { tenantId: tenantId },
+        });
+
+        // 2. Delete all Users (Workers/Sub-Admins) associated with this campaign
+        await tx.user.deleteMany({
+          where: { tenantId: tenantId },
+        });
+
+        // 3. Finally, delete the Campaign (Tenant) itself
+        await tx.tenant.delete({
+          where: { id: tenantId },
+        });
+      },
+      {
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "Campaign and all related data deleted successfully.",
+    });
+  } catch (error: any) {
+    console.error("Delete Tenant Error:", error);
+
+    // P2025 means the record was already deleted or doesn't exist
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "Campaign not found or already deleted." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to delete campaign. Please try again." },
       { status: 500 },
     );
   }

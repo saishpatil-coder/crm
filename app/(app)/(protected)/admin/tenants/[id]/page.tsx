@@ -7,43 +7,45 @@ import { apiClient } from "@/lib/appClient";
 import { localDb, LocalTenant } from "@/lib/db";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import ImageUpload from "@/components/ImageUpload";
 
 export default function TenantDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const tenantId = params.id;
-  const [error, setError] = useState("");
 
   const [tenant, setTenant] = useState<any>(null);
   const [isUsingCache, setIsUsingCache] = useState(false);
 
+  // UI States
   const [isToggling, setIsToggling] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isActive, setIsActive] = useState(false);
-  // 1. Added newPassword to the formData state
+
+  // --- NEW DELETE STATES ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [formData, setFormData] = useState({
     candidateName: "",
     partyName: "",
     constituencyName: "",
     constituencyNumber: "",
-    candidateImageBase64: "",
-    partyLogoBase64: "",
+    candidatePhotoUrl: "",
+    partyLogoUrl: "",
     newPassword: "",
   });
-  // 2. USE THE HOOK! Everything is handled for you.
+
   const {
     data: tenants,
     isLoading,
     isSyncing,
-    lastSyncedText,
-    refresh,
     isOnline,
   } = useOfflineData<LocalTenant>(`/admin/tenants`, "tenants");
-  // console.log(tenants)
+
   useEffect(() => {
-    // Only try to find the tenant if the array actually has data
     if (tenants.length > 0) {
       const reqTenant = tenants.find((i) => Number(i.id) === Number(tenantId));
 
@@ -52,7 +54,7 @@ export default function TenantDetailsPage() {
         setIsActive(Boolean(reqTenant.status));
       }
     }
-  }, [tenants, tenantId]); // <-- Added tenantId here
+  }, [tenants, tenantId]);
 
   const handleToggleStatus = async () => {
     setIsToggling(true);
@@ -70,18 +72,15 @@ export default function TenantDetailsPage() {
   };
 
   const handleEditClick = () => {
-    if (!isOnline) {
-      setError("");
-      return;
-    }
+    if (!isOnline) return;
     setFormData({
       candidateName: tenant.candidateName || "",
       partyName: tenant.partyName || "",
       constituencyName: tenant.constituencyName || "",
       constituencyNumber: tenant.constituencyNumber || "",
-      candidateImageBase64: "",
-      partyLogoBase64: "",
-      newPassword: "", // 2. Always start blank so we don't accidentally overwrite it
+      candidatePhotoUrl: tenant.candidatePhotoUrl || "",
+      partyLogoUrl: tenant.partyLogoUrl || "",
+      newPassword: "",
     });
     setIsEditing(true);
   };
@@ -90,71 +89,51 @@ export default function TenantDetailsPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  const handleSaveChanges = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setErrorMsg("");
 
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    fieldName: "candidateImageBase64" | "partyLogoBase64",
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Image must be under 2MB.");
-      e.target.value = "";
-      return;
-    }
     try {
-      const base64String = await convertToBase64(file);
-      setFormData((prev) => ({ ...prev, [fieldName]: base64String }));
-    } catch (error) {
-      alert("Failed to process image.");
+      const pass = formData.newPassword;
+      const { newPassword, ...profileData } = formData;
+
+      const profileResponse = await apiClient.patch(
+        `/admin/tenants/${tenantId}`,
+        profileData,
+      );
+      let finalTenantData = profileResponse.data;
+
+      if (pass && pass.trim() !== "") {
+        const passwordResponse = await apiClient.patch(
+          `/admin/tenants/${tenantId}`,
+          { newPassword: pass },
+        );
+        finalTenantData = passwordResponse.data;
+      }
+
+      setTenant({ ...tenant, ...finalTenantData });
+      setIsEditing(false);
+    } catch (error: any) {
+      setErrorMsg(error.response?.data?.error || "Failed to save changes.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-const handleSaveChanges = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsSaving(true);
-  setErrorMsg("");
-
-  try {
-    const pass = formData.newPassword;
-
-    // Remove the password from the first payload
-    const { newPassword, ...profileData } = formData;
-
-    // 1. Update Profile & Images
-    const profileResponse = await apiClient.patch(
-      `/admin/tenants/${tenantId}`,
-      profileData,
-    );
-
-    let finalTenantData = profileResponse.data;
-
-    // 2. Update Password (if they typed one)
-    if (pass && pass.trim() !== "") {
-      const passwordResponse = await apiClient.patch(
-        `/admin/tenants/${tenantId}`,
-        { newPassword: pass }, // <-- Must match backend expected key!
-      );
-      finalTenantData = passwordResponse.data;
+  // --- NEW DELETE HANDLER ---
+  const handleDeleteCampaign = async () => {
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/admin/tenants/${tenantId}`);
+      // Redirect back to the main admin dashboard after successful deletion
+      router.push("/admin");
+    } catch (error: any) {
+      alert(error.response?.data?.error || "Failed to delete campaign.");
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
     }
-
-    setTenant({ ...tenant, ...finalTenantData });
-    setIsEditing(false);
-  } catch (error: any) {
-    setErrorMsg(error.response?.data?.error || "Failed to save changes.");
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
   if (isLoading || isSyncing)
     return (
@@ -162,6 +141,7 @@ const handleSaveChanges = async (e: React.FormEvent) => {
         <ClassyLoader size={40} color="#3B82F6" />
       </div>
     );
+
   if (!tenants || !tenant)
     return (
       <div className="p-10 text-center font-bold text-red-500">
@@ -174,11 +154,60 @@ const handleSaveChanges = async (e: React.FormEvent) => {
   const labelClass = "block text-sm font-extrabold text-gray-800 mb-2";
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col pb-20 md:max-w-md md:mx-auto md:bg-gray-50 md:shadow-2xl md:border-x border-gray-200">
+    <div className="min-h-screen bg-gray-100 flex flex-col pb-20 md:max-w-md md:mx-auto md:bg-gray-50 md:shadow-2xl md:border-x border-gray-200 relative">
+      {/* --- CONFIRMATION MODAL --- */}
+      {isDeleteModalOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center px-4">
+          {/* Dark overlay */}
+          <div
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+          ></div>
+
+          {/* Modal Box */}
+          <div className="bg-white p-6 rounded-3xl shadow-2xl relative z-10 w-full max-w-sm flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-3xl mb-4">
+              ⚠️
+            </div>
+            <h2 className="text-xl font-black text-gray-900 mb-2">
+              Delete Campaign?
+            </h2>
+            <p className="text-sm font-bold text-gray-500 mb-6 leading-relaxed">
+              This action cannot be undone. All workers, voters, and data
+              associated with{" "}
+              <span className="text-gray-900">"{tenant.candidateName}"</span>{" "}
+              will be permanently erased.
+            </p>
+
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={isDeleting}
+                className="flex-1 h-12 bg-gray-100 text-gray-700 font-black rounded-xl active:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCampaign}
+                disabled={isDeleting}
+                className="flex-1 h-12 bg-red-600 text-white font-black rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center disabled:opacity-70"
+              >
+                {isDeleting ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  "Yes, Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Header --- */}
       <div className="bg-white px-5 pt-5 pb-4 shadow-sm sticky top-0 z-20 border-b border-gray-200 flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <button
-            onClick={() => (isEditing ? setIsEditing(false) : router.push("/admin"))}
+            onClick={() => (isEditing ? setIsEditing(false) : router.back())}
             className="text-blue-600 font-bold text-sm flex items-center gap-1 active:bg-blue-50 py-1 px-2 -ml-2 rounded-lg transition-colors"
           >
             <span className="text-lg leading-none mb-[2px]">←</span>{" "}
@@ -264,51 +293,26 @@ const handleSaveChanges = async (e: React.FormEvent) => {
               </div>
 
               <div className="grid grid-cols-2 gap-4 mt-2">
-                <div>
-                  <label className={labelClass}>New Photo</label>
-                  <label
-                    className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${formData.candidateImageBase64 ? "border-green-500 bg-green-50" : "border-gray-400 bg-white active:bg-gray-100"}`}
-                  >
-                    <span
-                      className={`text-sm font-bold ${formData.candidateImageBase64 ? "text-green-700" : "text-gray-500"}`}
-                    >
-                      {formData.candidateImageBase64
-                        ? "✅ Selected"
-                        : "+ Upload"}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        handleImageUpload(e, "candidateImageBase64")
-                      }
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                <ImageUpload
+                  label="New Photo"
+                  value={formData.candidatePhotoUrl}
+                  onChange={(url) =>
+                    setFormData((prev) => ({ ...prev, candidatePhotoUrl: url }))
+                  }
+                  preset="evmpwa"
+                />
 
-                <div>
-                  <label className={labelClass}>New Logo</label>
-                  <label
-                    className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${formData.partyLogoBase64 ? "border-green-500 bg-green-50" : "border-gray-400 bg-white active:bg-gray-100"}`}
-                  >
-                    <span
-                      className={`text-sm font-bold ${formData.partyLogoBase64 ? "text-green-700" : "text-gray-500"}`}
-                    >
-                      {formData.partyLogoBase64 ? "✅ Selected" : "+ Upload"}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, "partyLogoBase64")}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                <ImageUpload
+                  label="New Logo"
+                  value={formData.partyLogoUrl}
+                  onChange={(url) =>
+                    setFormData((prev) => ({ ...prev, partyLogoUrl: url }))
+                  }
+                  preset="evmpwa"
+                />
               </div>
             </div>
 
-            {/* 3. New Section for Password Reset */}
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-5">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b-2 border-gray-200 pb-2">
                 Sub Admin Access
@@ -339,6 +343,7 @@ const handleSaveChanges = async (e: React.FormEvent) => {
           </form>
         ) : (
           <>
+            {/* View Mode UI */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
                 {tenant.partyLogoUrl ? (
@@ -408,7 +413,7 @@ const handleSaveChanges = async (e: React.FormEvent) => {
               <div className="grid grid-cols-2 gap-3 mt-1">
                 <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
                   <p className="text-gray-500 text-[10px] font-black uppercase tracking-wider mb-1">
-                    Workers (Users)
+                    Workers
                   </p>
                   <p className="text-3xl font-black text-gray-900">
                     {tenant._count?.users || 0}
@@ -423,6 +428,22 @@ const handleSaveChanges = async (e: React.FormEvent) => {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* --- NEW DANGER ZONE --- */}
+            <div className="mt-4 bg-white p-5 rounded-2xl shadow-sm border border-red-100 flex flex-col gap-4">
+              <div>
+                <h2 className="font-black text-red-600 text-lg">Danger Zone</h2>
+                <p className="text-xs font-bold text-gray-500 mt-1">
+                  Permanently remove this campaign and all associated data.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="w-full h-12 bg-red-50 text-red-600 font-black rounded-xl border border-red-200 active:bg-red-100 transition-colors flex items-center justify-center"
+              >
+                Delete Campaign
+              </button>
             </div>
           </>
         )}

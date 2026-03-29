@@ -1,101 +1,3 @@
-// import { NextResponse } from "next/server";
-// import { prisma } from "@/lib/prisma";
-// import { headers } from "next/headers";
-
-// export async function GET(req: Request) {
-//   try {
-//     const headerList = headers();
-//     const user = JSON.parse((await headerList).get("x-user") || "{}");
-
-//     if (!user.userId) {
-//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//     }
-
-//     const { searchParams } = new URL(req.url);
-
-//     const page = parseInt(searchParams.get("page") || "1");
-//     const limit = parseInt(searchParams.get("limit") || "20");
-
-//     const caste = searchParams.get("caste");
-//     const villageId = searchParams.get("villageId");
-//     const boothId = searchParams.get("boothId");
-
-//     const skip = (page - 1) * limit;
-
-//     // -----------------------------
-//     // 1️⃣ Base Filter
-//     // -----------------------------
-
-//     let where: any = {
-//       tenantId: user.tenantId,
-//       isDeleted: false,
-//     };
-
-//     if (caste) where.caste = caste;
-//     if (boothId) where.boothId = Number(boothId);
-
-//     if (villageId) {
-//       where.booth = {
-//         villageId: Number(villageId),
-//       };
-//     }
-
-//     // -----------------------------
-//     // 2️⃣ Worker Restriction
-//     // -----------------------------
-
-//     if (user.role === "WORKER") {
-//       const assignments = await prisma.userBoothAssignment.findMany({
-//         where: {
-//           userId: user.userId,
-//         },
-//         select: {
-//           boothId: true,
-//         },
-//       });
-
-//       const allowedBooths = assignments.map((a) => a.boothId);
-
-//       where.boothId = {
-//         in: allowedBooths.length > 0 ? allowedBooths : [-1],
-//       };
-//     }
-
-//     // -----------------------------
-//     // 3️⃣ Fetch Data
-//     // -----------------------------
-
-//     const [voters, total] = await Promise.all([
-//       prisma.voter.findMany({
-//         where,
-//         skip,
-//         take: limit,
-//         include: {
-//           booth: {
-//             include: {
-//               village: true,
-//             },
-//           },
-//         },
-//         orderBy: { createdAt: "desc" },
-//       }),
-//       prisma.voter.count({ where }),
-//     ]);
-
-//     return NextResponse.json({
-//       page,
-//       limit,
-//       total,
-//       data: voters,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return NextResponse.json(
-//       { error: "Failed to fetch voters" },
-//       { status: 500 },
-//     );
-//   }
-// }
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -109,15 +11,41 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = JSON.parse(userHeader);
-
+    const jwtUser = JSON.parse(userHeader);
+    // or a malformed token), we cannot query the database.
+    if (!jwtUser.tenantId) {
+      console.warn(
+        "API Warning: Attempted to fetch voters without a tenantId.",
+      );
+      return NextResponse.json([]); // Return an empty array safely instead of crashing Prisma
+    }
     // Fetch voters for this specific campaign (tenant)
+    let where: any = {
+      tenantId: jwtUser.tenantId,
+    };
+
+    // --- CRITICAL FIX: ALWAYS FETCH FRESH ASSIGNMENTS ---
+    if (jwtUser.role === "WORKER") {
+      // Get the most up-to-date booth assignments directly from the database
+      // Note: Use jwtUser.id or jwtUser.userId depending on how your JWT is structured
+      const dbUser = await prisma.user.findUnique({
+        where: { id: jwtUser.id || jwtUser.userId },
+        select: { assignedBooths: true },
+      });
+
+      const allowedBooths = dbUser?.assignedBooths || [];
+
+      where.pollingStation = {
+        // If they have no booths assigned, pass a dummy string so it returns 0 voters safely
+        in:
+          allowedBooths.length > 0
+            ? allowedBooths
+            : ["__UNASSIGNED_NO_ACCESS__"],
+      };
+    }
+
     const voters = await prisma.voter.findMany({
-      where: {
-        tenantId: user.tenantId,
-        // Optional: If you want workers to only see their assigned voters, uncomment below:
-        // assignedWorkerId: user.role === "WORKER" ? user.id : undefined,
-      },
+      where,
       select: {
         id: true,
         epicNumber: true,
@@ -130,11 +58,11 @@ export async function GET(req: Request) {
         isVisited: true,
         hasVoted: true,
         supportLevel: true,
-        cityVillage:true,
-        caste:true,
-        serialNumber:true,
+        cityVillage: true,
+        caste: true,
+        serialNumber: true,
       },
-      take: 1000, // Limit to 1000 for mobile performance; implement search later for more
+      take: 1000, // Good limit for mobile syncing
       orderBy: {
         serialNumber: "asc",
       },

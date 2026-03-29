@@ -22,9 +22,13 @@ const dict = {
     byStatus: "By Status",
     visited: "Visited Voters",
     pending: "Pending Voters",
+    tools: "Data Tools",
+    duplicates: "Find Duplicates",
     firstLetter: "Alphabetical",
   },
   mr: {
+    tools: "डेटा टूल्स",
+    duplicates: "दुप्पट मतदार",
     title: "मतदार शोधा",
     subtitle: "तुम्हाला मतदार कसे शोधायचे आहेत ते निवडा",
     byLocation: "ठिकाणानुसार",
@@ -44,6 +48,8 @@ const dict = {
     firstLetter: "पहिले अक्षर",
   },
   hi: {
+    tools: "डेटा उपकरण",
+    duplicates: "डुप्लिकेट खोजें",
     title: "मतदाता खोजें",
     subtitle: "चुनें कि आप मतदाता कैसे खोजना चाहते हैं",
     byLocation: "स्थान के अनुसार",
@@ -197,6 +203,7 @@ export default function BrowseMenuPage() {
             bgClass="bg-yellow-50 active:bg-yellow-100"
             textClass="text-yellow-700"
           />
+ 
         </div>
         {/* STATUS GRID */}
         <SectionTitle title={t.byStatus} />
@@ -215,6 +222,19 @@ export default function BrowseMenuPage() {
             bgClass="bg-slate-100 active:bg-slate-200"
             textClass="text-slate-700"
           />
+        </div>
+        {/* TOOLS GRID */}
+        <SectionTitle title={t.tools} />
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <MenuButton
+            icon="👯"
+            label={t.duplicates}
+            // Explicitly route to the new duplicates page we just built
+            onClick={() => router.push("/mobile/duplicates")}
+            bgClass="bg-red-50 active:bg-red-100"
+            textClass="text-red-700"
+          />
+          {/* Empty slot for future tools, like Export or Sync */}
         </div>
       </div>
     </div>

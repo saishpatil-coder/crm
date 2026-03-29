@@ -62,8 +62,8 @@ export async function POST(req: Request) {
       subAdminName,
       subAdminMobile,
       password,
-      candidateImageBase64,
-      partyLogoBase64,
+      candidatePhotoUrl: candidateImageBase64,
+      partyLogoUrl: partyLogoBase64,
     } = body;
 
     if (
