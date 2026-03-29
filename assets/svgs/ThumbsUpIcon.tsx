@@ -1,4 +1,5 @@
 import React from "react";
+
 export function ThumbsUpIcon({ className }: { className?: string }) {
   return (
     <svg 
