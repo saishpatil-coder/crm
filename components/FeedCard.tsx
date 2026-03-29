@@ -6,7 +6,7 @@ import PostCreatorHeader from "./PostCreatorHeader";
 
 function FeedCard() {
     return (
-        <div className="min-h-screen w-full py-4">
+        <div className="w-full py-4">
             <div className="w-full p-4 rounded-xl bg-[#F1F5F9] shadow-md flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                     <PostCreatorHeader />
