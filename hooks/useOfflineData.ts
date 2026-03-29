@@ -87,7 +87,6 @@ export function useOfflineData<T>(
             setIsSyncing(false);
             return;
           }
-          
         }
 
         // 2. STRATEGY: NETWORK ON DEMAND
@@ -97,8 +96,12 @@ export function useOfflineData<T>(
 
           // Overwrite local DB
           // @ts-ignore
-          await localDb[dbTableName].bulkPut(freshData);
-
+          await localDb.transaction("rw", localDb[dbTableName], async () => {
+            // @ts-ignore
+            await localDb[dbTableName].clear();
+            // @ts-ignore
+            await localDb[dbTableName].bulkPut(freshData);
+          });
           setData(freshData);
 
           // Update sync time

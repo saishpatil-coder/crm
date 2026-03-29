@@ -27,8 +27,16 @@ const dict = {
     mismatchError: "Passwords do not match.",
     genericError: "Something went wrong. Please try again.",
     back: "Back to Number",
+    networkError: "No internet connection. Please check your network.",
+    serverError: "The server is currently unavailable. Please try again later.",
+    unauthorizedError: "Incorrect mobile number or password.",
+    notFoundError: "Account not found. Please contact your manager.",
   },
   mr: {
+    networkError: "इंटरनेट कनेक्शन नाही. कृपया तुमचे नेटवर्क तपासा.",
+    serverError: "सर्व्हर सध्या उपलब्ध नाही. कृपया नंतर पुन्हा प्रयत्न करा.",
+    unauthorizedError: "चुकीचा मोबाईल नंबर किंवा पासवर्ड.",
+    notFoundError: "खाते सापडले नाही. कृपया तुमच्या व्यवस्थापकाशी संपर्क साधा.",
     welcome: "मोहिमेत आपले स्वागत आहे",
     subtitle: "पुढे जाण्यासाठी तुमचा मोबाईल क्रमांक टाका",
     welcomeBack: "पुन्हा स्वागत आहे",
@@ -50,6 +58,11 @@ const dict = {
     back: "नंबरवर परत जा",
   },
   hi: {
+    networkError: "कोई इंटरनेट कनेक्शन नहीं। कृपया अपने नेटवर्क की जाँच करें।",
+    serverError:
+      "सर्वर वर्तमान में अनुपलब्ध है। कृपया बाद में पुन: प्रयास करें।",
+    unauthorizedError: "गलत मोबाइल नंबर या पासवर्ड।",
+    notFoundError: "खाता नहीं मिला। कृपया अपने प्रबंधक से संपर्क करें।",
     welcome: "अभियान में आपका स्वागत है",
     subtitle: "आगे बढ़ने के लिए अपना मोबाइल नंबर दर्ज करें",
     welcomeBack: "वापसी पर स्वागत है",
@@ -97,7 +110,28 @@ function MobileLoginContent() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const t = dict[lang];
+const getFriendlyErrorMessage = (error: any) => {
+  // 1. Check if the user is completely offline
+  if (!navigator.onLine || error.message === "Network Error") {
+    return t.networkError;
+  }
 
+  // 2. Check if the server actually responded with a status code
+  if (error.response) {
+    const status = error.response.status;
+
+    if (status >= 500) return t.serverError; // Catches 500, 502, 503, etc.
+    if (status === 401) return t.unauthorizedError;
+    if (status === 404) return t.notFoundError;
+
+    // 3. If the backend sent a specific string message (e.g., in a 400 Bad Request), use it.
+    // Otherwise, fall back to the generic language translation.
+    return error.response.data?.error || t.genericError;
+  }
+
+  // Fallback for everything else
+  return t.genericError;
+};
   // --- SINGLE UNIFIED REDIRECT EFFECT ---
   useEffect(() => {
     if (isAuthLoading) return; // Do nothing while context is initializing
@@ -129,15 +163,16 @@ function MobileLoginContent() {
       const response = await apiClient.post("/auth/check-user", { phone });
 
       if (!response.data.exists) {
-        throw new Error("Account not found. Contact your manager.");
+        throw new Error("404_NOT_FOUND"); // Force trigger the catch block      }
       }
-
       setIsSettingPassword(!response.data.hasPassword);
       setStep(2);
     } catch (error: any) {
-      setErrorMsg(
-        error.response?.data?.error || error.message || t.genericError,
-      );
+      if (error.message === "404_NOT_FOUND") {
+        setErrorMsg(t.notFoundError);
+      } else {
+        setErrorMsg(getFriendlyErrorMessage(error));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -176,7 +211,7 @@ function MobileLoginContent() {
       login(token, userData);
       // Wait for the AuthContext effect to catch the user and route them
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.error || t.genericError);
+      setErrorMsg(getFriendlyErrorMessage(error));
       setIsSubmitting(false);
     }
   };
