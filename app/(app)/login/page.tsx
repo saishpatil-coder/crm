@@ -91,7 +91,6 @@ function MobileLoginContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Renamed context loading to isAuthLoading to avoid confusion
   const { login, user, logout, isLoading: isAuthLoading } = useAuth();
 
   // State
@@ -110,44 +109,43 @@ function MobileLoginContent() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const t = dict[lang];
-const getFriendlyErrorMessage = (error: any) => {
-  // 1. Check if the user is completely offline
-  if (!navigator.onLine || error.message === "Network Error") {
-    return t.networkError;
-  }
 
-  // 2. Check if the server actually responded with a status code
-  if (error.response) {
-    const status = error.response.status;
+  const getFriendlyErrorMessage = (error: any) => {
+    if (!navigator.onLine || error.message === "Network Error") {
+      return t.networkError;
+    }
+    if (error.response) {
+      const status = error.response.status;
+      if (status >= 500) return t.serverError;
+      if (status === 401) return t.unauthorizedError;
+      if (status === 404) return t.notFoundError;
+      return error.response.data?.error || t.genericError;
+    }
+    return t.genericError;
+  };
 
-    if (status >= 500) return t.serverError; // Catches 500, 502, 503, etc.
-    if (status === 401) return t.unauthorizedError;
-    if (status === 404) return t.notFoundError;
-
-    // 3. If the backend sent a specific string message (e.g., in a 400 Bad Request), use it.
-    // Otherwise, fall back to the generic language translation.
-    return error.response.data?.error || t.genericError;
-  }
-
-  // Fallback for everything else
-  return t.genericError;
-};
   // --- SINGLE UNIFIED REDIRECT EFFECT ---
   useEffect(() => {
-    if (isAuthLoading) return; // Do nothing while context is initializing
+    if (isAuthLoading) return;
 
     const errorType = searchParams.get("error");
     if (errorType === "session_expired") {
       logout();
-      // Remove the query param so we don't infinitely loop
       router.replace("/login");
       return;
     }
 
     if (user) {
-      if (user.role === "WORKER") router.push("/mobile");
-      else if (user.role === "SUB_ADMIN") router.push("/dashboard");
-      else if (user.role === "MASTER_ADMIN") router.push("/admin");
+      // Added a fallback just in case the role isn't a perfect match
+      if (user.role === "WORKER") {
+        router.push("/mobile");
+      } else if (user.role === "SUB_ADMIN") {
+        router.push("/dashboard");
+      } else if (user.role === "MASTER_ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard"); // Safety fallback
+      }
     }
   }, [user, isAuthLoading, router, searchParams, logout]);
 
@@ -163,8 +161,9 @@ const getFriendlyErrorMessage = (error: any) => {
       const response = await apiClient.post("/auth/check-user", { phone });
 
       if (!response.data.exists) {
-        throw new Error("404_NOT_FOUND"); // Force trigger the catch block      }
+        throw new Error("404_NOT_FOUND");
       }
+
       setIsSettingPassword(!response.data.hasPassword);
       setStep(2);
     } catch (error: any) {
@@ -209,17 +208,15 @@ const getFriendlyErrorMessage = (error: any) => {
       };
 
       login(token, userData);
-      // Wait for the AuthContext effect to catch the user and route them
     } catch (error: any) {
       setErrorMsg(getFriendlyErrorMessage(error));
       setIsSubmitting(false);
     }
   };
 
-  // Show a clean loading state while AuthContext checks local storage
   if (isAuthLoading) {
     return (
-      <div className="min-h-dvh bg-gray-50 flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <div className="text-gray-500 font-bold text-sm">
           Verifying session...
@@ -228,12 +225,21 @@ const getFriendlyErrorMessage = (error: any) => {
     );
   }
 
-  // If we have a user and we are NOT loading, return nothing because the useEffect will push them away
-  if (user) return null;
+  // FIXED: Do not return null. Show a redirecting state.
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-500 font-bold text-sm">
+          Redirecting securely...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    // Replaced min-h-screen with min-h-[100dvh] for better mobile browser support
-    <div className="min-h-dvh bg-gray-50 flex flex-col px-6 py-8 md:hidden">
+    // FIXED: Removed md:hidden and added max-w-md mx-auto
+    <div className="min-h-screen bg-gray-50 flex flex-col px-6 py-8 w-full max-w-md mx-auto md:shadow-2xl md:border-x border-gray-200">
       {/* Language Selector */}
       <div className="flex justify-end mb-8 shrink-0">
         <select
@@ -320,7 +326,6 @@ const getFriendlyErrorMessage = (error: any) => {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  // Removed autoFocus to prevent aggressive mobile keyboard popups
                   className="w-full h-14 pl-4 pr-20 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
                   placeholder={t.passwordPlaceholder}
                   value={password}
@@ -339,7 +344,6 @@ const getFriendlyErrorMessage = (error: any) => {
               </div>
             </div>
 
-            {/* Extra Confirm Field ONLY if setting password */}
             {isSettingPassword && (
               <div>
                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2 pl-1">
@@ -357,7 +361,6 @@ const getFriendlyErrorMessage = (error: any) => {
                       setErrorMsg("");
                     }}
                   />
-                  {/* Visual match indicator */}
                   {confirmPassword.length > 0 && (
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg">
                       {password === confirmPassword ? "✅" : "❌"}
@@ -385,7 +388,6 @@ const getFriendlyErrorMessage = (error: any) => {
               )}
             </button>
 
-            {/* Back button */}
             <div className="flex justify-center mt-2">
               <button
                 type="button"
@@ -411,7 +413,7 @@ export default function MobileLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-dvh bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
       }
