@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
         { status: 500 },
       );
     }
+    const generatedSlug = candidateName
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-') // Replaces spaces and special chars with hyphens
+  .replace(/^-+|-+$/g, '')     // Removes trailing hyphens
+  + '-' + Date.now();
 
     const result = await prisma.$transaction(async (tx) => {
       // 1️⃣ Create Tenant
@@ -54,6 +59,7 @@ export async function POST(req: NextRequest) {
           candidateName,
           constituencyNumber: String(constituencyNumber),
           constituencyName,
+          slug:generatedSlug
         },
       });
 
