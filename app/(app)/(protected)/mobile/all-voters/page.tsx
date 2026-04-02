@@ -7,8 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { localDb } from "@/lib/db";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 const dict = {
   en: {
     search: "Search in this list...",
@@ -52,11 +51,17 @@ export default function FilteredVoterListPage() {
   const t = dict[lang as keyof typeof dict];
 
   const [searchQuery, setSearchQuery] = useState("");
-
+const [visibleCount, setVisibleCount] = useState(20);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  
   // Extract the filter type and value from the URL (e.g., filterType="village", filterValue="नांद्रे")
   const filterType = Array.from(searchParams.keys())[0];
   const filterValue = searchParams.get(filterType) || "";
-
+// Reset the visible count back to 20 if they type in the search bar or change filters
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchQuery, filterValue, filterType]);
+  
   const optimizedDexieQuery = useCallback(async () => {
     // Map URL langs to DB langs
     const dbLangMap: Record<string, string> = {
@@ -75,6 +80,7 @@ export default function FilteredVoterListPage() {
     if (primaryVoters.length > 0) {
       return primaryVoters;
     }
+    
 
     // If no voters found for primary language, fallback to Marathi
     if (dbLang !== "Marathi") {
@@ -160,14 +166,39 @@ export default function FilteredVoterListPage() {
       v.epicNumber.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const currentlyVisibleVoters = finalDisplayVoters.slice(0, visibleCount);
   // Dynamic header title based on what they searched for
   const headerTitle = filterValue
     ? `${filterValue} (${filteredVoters.length})`
     : "All Voters";
-
   // Check if we are showing a fallback language
   const isFallback = finalDisplayVoters.length > 0 && finalDisplayVoters[0]?.language === 'Marathi' && lang !== 'mr';
+// The Intersection Observer: Triggers when the user scrolls to the bottom
+  useEffect(() => {
+    // 1. CRITICAL: Don't try to observe anything until the initial data is done loading
+    if (isLoading) return;
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 20); 
+        }
+      },
+      { threshold: 0.1 } 
+    );
+
+    // 2. Safely capture the current div reference
+    const currentTarget = observerTarget.current;
+
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      // 3. Clean up the specific element we observed
+      if (currentTarget) observer.unobserve(currentTarget);
+    };
+  }, [isLoading, finalDisplayVoters.length]); // <-- THE FIX: Wake up when loading finishes or the list changes!
   return (
     <>
       <Header />
@@ -257,7 +288,7 @@ export default function FilteredVoterListPage() {
                   </p>
                 </div>
               )}
-              {finalDisplayVoters.map((voter) => (
+              {currentlyVisibleVoters.map((voter) => (
                 <VoterCard
                   key={voter.id}
                   voter={voter}
@@ -265,6 +296,15 @@ export default function FilteredVoterListPage() {
                   onClick={() => router.push(`/mobile/voters/${voter.id}`)}
                 />
               ))}
+              {visibleCount < finalDisplayVoters.length && (
+                <div 
+                  ref={observerTarget} 
+                  className="w-full py-6 flex justify-center items-center text-gray-400 font-bold text-sm"
+                >
+                  <ClassyLoader size={30} color="#09ff09" />
+                  <span className="ml-2">Loading more...</span>
+                </div>
+              )}
             </>
           )}
         </div>

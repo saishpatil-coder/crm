@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { localDb, LocalVoter } from "@/lib/db";
 import { useLanguage } from "@/context/LanguageContext";
 import { useColor, ThemeColor } from "@/context/ColorContext";
+import VoterSlipShare from "@/components/VoterSlipShare";
 
 const dict = {
   en: {
@@ -357,6 +358,8 @@ export default function VoterProfileViewPage() {
         >
           <span>✏️</span> {t.editBtn}
         </button>
+
+        <VoterSlipShare voter={voter} t={t} />
       </div>
     </div>
   );

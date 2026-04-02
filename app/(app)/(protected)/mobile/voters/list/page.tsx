@@ -4,7 +4,8 @@ import CurvedHeader from "@/components/CurvedHeader";
 import { useLanguage } from "@/context/LanguageContext";
 import { localDb } from "@/lib/db";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import ClassyLoader from "@/components/ClassyLoader";
 
 const dict = {
   en: {
@@ -78,6 +79,43 @@ export default function DynamicFilterListPage() {
 
   const [groups, setGroups] = useState<GroupData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [visibleCount, setVisibleCount] = useState(20);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Reset the visible count back to 20 if the filter changes
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [filterBy]);
+
+  // The Intersection Observer: Triggers when the user scrolls to the bottom
+  useEffect(() => {
+    // 1. CRITICAL: Don't try to observe anything until the initial data is done loading
+    if (isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 20); 
+        }
+      },
+      { threshold: 0.1 } 
+    );
+
+    // 2. Safely capture the current div reference
+    const currentTarget = observerTarget.current;
+
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      // 3. Clean up the specific element we observed
+      if (currentTarget) observer.unobserve(currentTarget);
+    };
+  }, [isLoading, groups.length]);
+
+  const currentlyVisibleGroups = groups.slice(0, visibleCount);
 
   // Get localized title dynamically based on the param
   const pageTitle = (t.titles as any)[filterBy] || t.titles.default;
@@ -217,30 +255,41 @@ export default function DynamicFilterListPage() {
             {t.noData}
           </p>
         ) : (
-          groups.map((group, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleGroupClick(group.name)}
-              className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 active:bg-blue-50 transition-colors flex items-center justify-between text-left group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-lg font-black shrink-0 border border-blue-100">
-                  {group.name.charAt(0).toUpperCase()}
+          <>
+            {currentlyVisibleGroups.map((group, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleGroupClick(group.name)}
+                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 active:bg-blue-50 transition-colors flex items-center justify-between text-left group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-lg font-black shrink-0 border border-blue-100">
+                    {group.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="font-black text-gray-900 text-base leading-tight">
+                      {group.name}
+                    </h2>
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5">
+                      {group.count} {t.voters}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-black text-gray-900 text-base leading-tight">
-                    {group.name}
-                  </h2>
-                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-0.5">
-                    {group.count} {t.voters}
-                  </p>
-                </div>
+                <span className="text-gray-300 font-black text-xl group-active:text-blue-500 transition-colors">
+                  →
+                </span>
+              </button>
+            ))}
+            {visibleCount < groups.length && (
+              <div 
+                ref={observerTarget} 
+                className="w-full py-6 flex justify-center items-center text-gray-400 font-bold text-sm"
+              >
+                <ClassyLoader size={30} color="#09ff09" />
+                <span className="ml-2">Loading more...</span>
               </div>
-              <span className="text-gray-300 font-black text-xl group-active:text-blue-500 transition-colors">
-                →
-              </span>
-            </button>
-          ))
+            )}
+          </>
         )}
       </div>
     </div>
