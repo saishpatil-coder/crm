@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 //////////////////////////////////////////////////////
@@ -34,6 +35,7 @@ model Tenant {
   partyName            String?
   partyLogoUrl         String? @db.Text
   candidatePhotoUrl    String? @db.Text
+  slug                 String   @unique // e.g., "vikas-patil-2026"
   electionType         String?
   constituencyName     String
   constituencyNumber   String?
@@ -47,6 +49,7 @@ model Tenant {
   activityLogs         ActivityLog[]
   exportLogs           ExportLog[]
   voterUpdateLogs      VoterUpdateLog[]
+  posts                Post[]
 }
 
 //////////////////////////////////////////////////////
@@ -80,6 +83,8 @@ model User {
   voterUpdates    VoterUpdateLog[]
   activityLogs    ActivityLog[]
   exportLogs      ExportLog[]
+  posts           Post[]
+  likes           Like[]
 
   @@index([tenantId])
 }
@@ -237,4 +242,41 @@ model Otp {
   createdAt    DateTime @default(now())
 
   @@index([mobileNumber])
+}
+
+//////////////////////////////////////////////////////
+// POST (Social Feed)
+//////////////////////////////////////////////////////
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  authorId    Int
+  description String   @db.Text
+  mediaType   String?  // 'image', 'video', or null
+  mediaUrl    String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes       Like[]
+
+  @@index([tenantId])
+}
+
+//////////////////////////////////////////////////////
+// LIKE (Social Feed)
+//////////////////////////////////////////////////////
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
 }

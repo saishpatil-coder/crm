@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { localDb, LocalVoter } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 import { useColor, ThemeColor } from '@/context/ColorContext';
+import MediaUpload from '@/components/MediaUpload';
 
 const dict = {
   en: {
@@ -31,7 +32,8 @@ const dict = {
       WEAK: "Weak Support",
       AGAINST: "Against",
       UNKNOWN: "Not Decided"
-    }
+    },
+    photo: "Voter Photo"
   },
   mr: {
     editProfile: "मतदार तपशील संपादित करा",
@@ -57,7 +59,8 @@ const dict = {
       WEAK: "कमकुवत पाठिंबा",
       AGAINST: "विरोधात",
       UNKNOWN: "ठरलेले नाही"
-    }
+    },
+    photo: "मतदाराचा फोटो"
   },
   hi: {
     editProfile: "मतदाता विवरण संपादित करें",
@@ -83,7 +86,8 @@ const dict = {
       WEAK: "कमजोर समर्थन",
       AGAINST: "खिलाफ",
       UNKNOWN: "तय नहीं"
-    }
+    },
+    photo: "मतदाता फोटो"
   }
 };
 
@@ -109,6 +113,7 @@ export default function VoterEditPage() {
     caste: '',
     notes: '',
     houseNumber: '',
+    photoUrl: '',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -139,6 +144,7 @@ export default function VoterEditPage() {
             caste: data.caste || '',
             notes: data.notes || '',
             houseNumber: data.houseNumber || '',
+            photoUrl: data.photoUrl || '',
           });
         }
       } catch (error) {
@@ -288,6 +294,15 @@ export default function VoterEditPage() {
             {/* 3. Personal Data Input */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 shrink-0">
               <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2 mb-3">{t.personalInfo}</h3>
+              
+              <div className="mb-4">
+                <MediaUpload 
+                  value={formData.photoUrl} 
+                  onChange={(url) => handleInputChange('photoUrl', url)} 
+                  label={t.photo} 
+                />
+              </div>
+
               {renderInput(t.mobile, "mobileNumber", "Enter Mobile Number", "tel")}
               {renderInput(t.caste, "caste", "e.g. Maratha, Mali, etc.")}
               

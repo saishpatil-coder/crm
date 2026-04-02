@@ -15,6 +15,13 @@ interface User {
   role?: string;
   tenantId?: number;
   name?: string;
+  tenant?: {
+    candidateName: string;
+    partyName?: string;
+    partyLogoUrl?: string;
+    candidatePhotoUrl?: string;
+    constituencyName: string;
+  };
 }
 
 interface AuthContextType {

@@ -1,6 +1,5 @@
 "use client";
 
-import ClassyLoader from "@/components/ClassyLoader";
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -23,6 +22,8 @@ const dict = {
     addWorkerSub: "Create account & set password",
     viewWorkers: "View All Workers",
     viewWorkersSub: "Manage existing team members",
+    uploadVoters: "Upload Voters",
+    uploadVotersSub: "Add voter DB via CSV",
   },
   mr: {
     title: "माझी मोहीम",
@@ -37,6 +38,8 @@ const dict = {
     addWorkerSub: "खाते तयार करा आणि पासवर्ड सेट करा",
     viewWorkers: "सर्व कार्यकर्ते पहा",
     viewWorkersSub: "विद्यमान टीम सदस्य व्यवस्थापित करा",
+    uploadVoters: "मतदार यादी अपलोड करा",
+    uploadVotersSub: "मतदारांचे CSV जोडा",
   },
   hi: {
     title: "मेरा अभियान",
@@ -51,6 +54,8 @@ const dict = {
     addWorkerSub: "खाता बनाएं और पासवर्ड सेट करें",
     viewWorkers: "सभी कार्यकर्ता देखें",
     viewWorkersSub: "मौजूदा टीम के सदस्यों को प्रबंधित करें",
+    uploadVoters: "मतदाता सूची अपलोड करें",
+    uploadVotersSub: "मतदाताओं का CSV जोड़ें",
   },
 };
 
@@ -219,6 +224,27 @@ export default function SubAdminDashboard() {
               </div>
             </div>
             <span className="text-gray-400 font-bold">→</span>
+          </button>
+
+          {/* UPLOAD VOTERS BUTTON */}
+          <button
+            onClick={() => router.push("/dashboard/upload")}
+            className="w-full bg-orange-500 text-white p-4 rounded-2xl shadow-[0_8px_16px_-6px_rgba(249,115,22,0.4)] active:scale-[0.98] transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">
+                ⬆️
+              </div>
+              <div className="text-left">
+                <h4 className="font-black text-lg leading-tight">
+                  {t.uploadVoters}
+                </h4>
+                <p className="text-orange-200 text-xs font-semibold">
+                  {t.uploadVotersSub}
+                </p>
+              </div>
+            </div>
+            <span className="text-white font-bold opacity-50">→</span>
           </button>
         </div>
       </div>

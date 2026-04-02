@@ -92,6 +92,22 @@ export async function POST(req: Request) {
 
     const hash = await bcrypt.hash(password, 10);
 
+    // Generate a URL-safe slug from candidateName
+    const baseSlug = candidateName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      + "-" + new Date().getFullYear();
+
+    // Ensure uniqueness
+    let slug = baseSlug;
+    let attempt = 0;
+    while (await prisma.tenant.findUnique({ where: { slug } })) {
+      attempt++;
+      slug = `${baseSlug}-${attempt}`;
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const tenant = await tx.tenant.create({
         data: {
@@ -100,7 +116,8 @@ export async function POST(req: Request) {
           constituencyName,
           constituencyNumber,
           partyLogoUrl:partyLogoBase64,
-          candidatePhotoUrl:candidateImageBase64
+          candidatePhotoUrl:candidateImageBase64,
+          slug,
         },
       });
 

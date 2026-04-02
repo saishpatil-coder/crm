@@ -49,6 +49,7 @@ export async function POST(req: Request) {
               caste: item.payload.caste,
               notes: item.payload.notes,
               houseNumber: item.payload.houseNumber,
+              photoUrl: item.payload.photoUrl,
               lastUpdatedBy: workerId,
               lastUpdatedAt: new Date(),
             },

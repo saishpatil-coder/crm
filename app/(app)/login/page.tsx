@@ -95,14 +95,12 @@ function MobileLoginContent() {
 
   // State
   const [lang, setLang] = useState<Language>("mr");
-  const [step, setStep] = useState<1 | 2>(1);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  // Flow States
-  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Splash Screen State
+  const [splashData, setSplashData] = useState<any>(null);
 
   // Local submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,50 +147,31 @@ function MobileLoginContent() {
     }
   }, [user, isAuthLoading, router, searchParams, logout]);
 
-  // STEP 1: Check if user exists
-  const handleCheckUser = async (e: React.FormEvent) => {
+  const handleSubmitAction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length < 10) return;
+    if (phone.length < 10 || password.length === 0) return;
 
     setIsSubmitting(true);
     setErrorMsg("");
 
     try {
-      const response = await apiClient.post("/auth/check-user", { phone });
+      // Check user existence and password status
+      const checkResponse = await apiClient.post("/auth/check-user", { phone });
 
-      if (!response.data.exists) {
+      if (!checkResponse.data.exists) {
         throw new Error("404_NOT_FOUND");
       }
 
-      setIsSettingPassword(!response.data.hasPassword);
-      setStep(2);
-    } catch (error: any) {
-      if (error.message === "404_NOT_FOUND") {
-        setErrorMsg(t.notFoundError);
-      } else {
-        setErrorMsg(getFriendlyErrorMessage(error));
+      // If user exists but hasn't set a password yet, we use their provided password to set it
+      if (!checkResponse.data.hasPassword) {
+        await apiClient.post("/auth/set-password", {
+          mobileNumber: phone,
+          password: password,
+        });
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
-  // STEP 2: Either Login OR Set Password & Login
-  const handleSubmitAction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password.length === 0) return;
-
-    if (isSettingPassword && password !== confirmPassword) {
-      setErrorMsg(t.mismatchError);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMsg("");
-
-    try {
-      const endpoint = isSettingPassword ? "/auth/set-password" : "/auth/login";
-      const response = await apiClient.post(endpoint, {
+      // Now proceed to login
+      const response = await apiClient.post("/auth/login", {
         mobileNumber: phone,
         password,
       });
@@ -205,11 +184,23 @@ function MobileLoginContent() {
         role: responseUser.role?.name,
         tenantId: responseUser.tenantId,
         name: responseUser.name,
+        tenant: responseUser.tenant,
       };
 
-      login(token, userData);
+      // Trigger splash screen
+      setSplashData(responseUser.tenant);
+      
+      // Delay login redirect for splash animation (2 seconds)
+      setTimeout(() => {
+        login(token, userData);
+      }, 2500);
+      
     } catch (error: any) {
-      setErrorMsg(getFriendlyErrorMessage(error));
+      if (error.message === "404_NOT_FOUND") {
+        setErrorMsg(t.notFoundError);
+      } else {
+        setErrorMsg(getFriendlyErrorMessage(error));
+      }
       setIsSubmitting(false);
     }
   };
@@ -225,13 +216,52 @@ function MobileLoginContent() {
     );
   }
 
-  // FIXED: Do not return null. Show a redirecting state.
-  if (user) {
+  if (user && !splashData) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
         <div className="text-gray-500 font-bold text-sm">
           Redirecting securely...
+        </div>
+      </div>
+    );
+  }
+
+  // FIXED: Show splash screen if we have splashData
+  if (splashData) {
+    return (
+      <div className="min-h-screen bg-blue-600 flex flex-col items-center justify-center px-6 py-8 w-full max-w-md mx-auto relative overflow-hidden">
+        {/* Animated Background Effect */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+        
+        <div className="relative z-10 flex flex-col items-center gap-6 animate-in zoom-in duration-700 fade-in">
+          {splashData.partyLogoUrl && (
+            <div className="bg-white p-2 rounded-full shadow-2xl animate-bounce">
+              <img
+                src={splashData.partyLogoUrl}
+                alt={splashData.partyName || "Party Logo"}
+                className="w-24 h-24 rounded-full object-cover"
+              />
+            </div>
+          )}
+          
+          <div className="text-center">
+            <h1 className="text-3xl font-black text-white tracking-widest uppercase mb-1 drop-shadow-md">
+              {splashData.partyName || "CAMPAIGN"}
+            </h1>
+            {splashData.candidateName && (
+              <p className="text-blue-100 font-bold tracking-widest uppercase text-sm drop-shadow-sm">
+                {splashData.candidateName}
+              </p>
+            )}
+          </div>
+          
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-4 border-blue-400 border-t-white rounded-full animate-spin"></div>
+            <span className="text-blue-200 text-xs font-bold tracking-widest animate-pulse">
+              LOADING PROFILE...
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -258,18 +288,10 @@ function MobileLoginContent() {
 
       <div className="flex-1 flex flex-col justify-center mb-10">
         <h1 className="text-2xl font-black text-gray-900 mb-2">
-          {step === 1
-            ? t.welcome
-            : isSettingPassword
-              ? t.setPasswordTitle
-              : t.welcomeBack}
+          {t.welcome}
         </h1>
         <p className="text-sm font-bold text-gray-500 mb-6">
-          {step === 1
-            ? t.subtitle
-            : isSettingPassword
-              ? t.setPasswordSubtitle
-              : `+91 ${phone}`}
+          {t.subtitle}
         </p>
 
         {errorMsg && (
@@ -278,132 +300,67 @@ function MobileLoginContent() {
           </div>
         )}
 
-        {/* --- STEP 1 FORM: Ask for Number --- */}
-        {step === 1 && (
-          <form onSubmit={handleCheckUser} className="flex flex-col gap-5">
-            <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
-                {t.phoneLabel}
-              </label>
-              <div className="flex shadow-sm rounded-xl overflow-hidden border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
-                <span className="flex items-center justify-center bg-gray-50 px-4 text-gray-600 font-black border-r-2 border-gray-200">
-                  +91
-                </span>
-                <input
-                  type="tel"
-                  maxLength={10}
-                  required
-                  className="w-full h-14 px-4 text-lg font-bold text-gray-900 focus:outline-none bg-transparent"
-                  placeholder={t.phonePlaceholder}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                />
-              </div>
+        <form onSubmit={handleSubmitAction} className="flex flex-col gap-6">
+          {/* Phone Field */}
+          <div>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
+              {t.phoneLabel}
+            </label>
+            <div className="flex shadow-sm rounded-xl overflow-hidden border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
+              <span className="flex items-center justify-center bg-gray-50 px-4 text-gray-600 font-black border-r-2 border-gray-200">
+                +91
+              </span>
+              <input
+                type="tel"
+                maxLength={10}
+                required
+                className="w-full h-14 px-4 text-lg font-bold text-gray-900 focus:outline-none bg-transparent"
+                placeholder={t.phonePlaceholder}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+              />
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={phone.length < 10 || isSubmitting}
-              className="mt-2 w-full h-14 bg-blue-600 text-white text-lg font-black rounded-xl shadow-md disabled:bg-blue-300 active:scale-[0.98] transition-all flex items-center justify-center"
-            >
-              {isSubmitting ? (
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                t.next
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* --- STEP 2 FORM: Password Entry or Creation --- */}
-        {step === 2 && (
-          <form onSubmit={handleSubmitAction} className="flex flex-col gap-5">
-            <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
-                {isSettingPassword ? t.setPasswordTitle : t.passwordLabel}
-              </label>
-              <div className="relative shadow-sm rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full h-14 pl-4 pr-20 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
-                  placeholder={t.passwordPlaceholder}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrorMsg("");
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-black uppercase tracking-wider text-blue-600 bg-blue-50 rounded-md active:bg-blue-100"
-                >
-                  {showPassword ? t.hide : t.show}
-                </button>
-              </div>
-            </div>
-
-            {isSettingPassword && (
-              <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2 pl-1">
-                  {t.confirmLabel}
-                </label>
-                <div className="relative shadow-sm rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    className="w-full h-14 pl-4 pr-10 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
-                    placeholder={t.confirmPlaceholder}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      setErrorMsg("");
-                    }}
-                  />
-                  {confirmPassword.length > 0 && (
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg">
-                      {password === confirmPassword ? "✅" : "❌"}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={
-                password.length === 0 ||
-                (isSettingPassword && confirmPassword.length === 0) ||
-                isSubmitting
-              }
-              className="mt-2 w-full h-14 bg-blue-600 text-white text-lg font-black rounded-xl shadow-md disabled:bg-blue-300 active:scale-[0.98] transition-all flex items-center justify-center"
-            >
-              {isSubmitting ? (
-                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : isSettingPassword ? (
-                t.setAndLogin
-              ) : (
-                t.login
-              )}
-            </button>
-
-            <div className="flex justify-center mt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep(1);
-                  setPassword("");
-                  setConfirmPassword("");
+          {/* Password Field */}
+          <div>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
+              {t.passwordLabel}
+            </label>
+            <div className="relative shadow-sm rounded-xl border-2 border-gray-200 focus-within:border-blue-500 transition-colors bg-white">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full h-14 pl-4 pr-20 text-lg font-bold text-gray-900 focus:outline-none bg-transparent rounded-xl"
+                placeholder={t.passwordPlaceholder}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
                   setErrorMsg("");
                 }}
-                className="text-xs font-black uppercase tracking-widest text-gray-400 active:text-gray-800 py-2 px-4"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs font-black uppercase tracking-wider text-blue-600 bg-blue-50 rounded-md active:bg-blue-100"
               >
-                {t.back}
+                {showPassword ? t.hide : t.show}
               </button>
             </div>
-          </form>
-        )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={phone.length < 10 || password.length === 0 || isSubmitting}
+            className="mt-2 w-full h-14 bg-blue-600 text-white text-lg font-black rounded-xl shadow-md disabled:bg-blue-300 active:scale-[0.98] transition-all flex items-center justify-center"
+          >
+            {isSubmitting ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              t.login
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

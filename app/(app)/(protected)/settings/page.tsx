@@ -5,12 +5,17 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage, Language } from "@/context/LanguageContext";
 import { apiClient } from "@/lib/appClient";
-
-// Inside your Settings Page
 import { useColor, ThemeColor } from '@/context/ColorContext';
 import CurvedHeader from "@/components/CurvedHeader";
 
-// ... inside the component ...
+// Theme mappings for dynamic Stitch UI components
+const themeStyles: Record<ThemeColor, { bg: string, text: string, textHover: string, activeBg: string, ring: string, activeText: string }> = {
+  blue: { bg: "bg-blue-600", text: "text-blue-600", textHover: "hover:text-blue-600", activeBg: "bg-blue-50", ring: "ring-blue-500", activeText: "text-blue-600" },
+  green: { bg: "bg-green-600", text: "text-green-600", textHover: "hover:text-green-600", activeBg: "bg-green-50", ring: "ring-green-500", activeText: "text-green-600" },
+  orange: { bg: "bg-orange-500", text: "text-orange-500", textHover: "hover:text-orange-500", activeBg: "bg-orange-50", ring: "ring-orange-500", activeText: "text-orange-600" },
+  purple: { bg: "bg-purple-600", text: "text-purple-600", textHover: "hover:text-purple-600", activeBg: "bg-purple-50", ring: "ring-purple-500", activeText: "text-purple-600" },
+  red: { bg: "bg-red-600", text: "text-red-600", textHover: "hover:text-red-600", activeBg: "bg-red-50", ring: "ring-red-500", activeText: "text-red-600" },
+};
 
 const colors: { name: string; value: ThemeColor; bg: string }[] = [
   { name: 'Blue', value: 'blue', bg: 'bg-blue-600' },
@@ -19,6 +24,7 @@ const colors: { name: string; value: ThemeColor; bg: string }[] = [
   { name: 'Purple', value: 'purple', bg: 'bg-purple-600' },
   { name: 'Red', value: 'red', bg: 'bg-red-600' },
 ];
+
 const dict = {
   en: {
     title: "Settings",
@@ -81,21 +87,14 @@ const dict = {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const {
-    user,
-    logout,
-    isLoading: loading,
-    activeRole,
-    switchRole,
-  } = useAuth();
+  const { user, logout, isLoading: loading, activeRole, switchRole } = useAuth();
   const { lang, setLang } = useLanguage();
   const t = dict[lang];
-const { primaryColor, setPrimaryColor } = useColor();
+  const { primaryColor, setPrimaryColor } = useColor();
+  const currentTheme = themeStyles[primaryColor];
 
   // UI State for expanding sections
-  const [activeSection, setActiveSection] = useState<
-    "NONE" | "LANGUAGE" | "PASSWORD"
-  >("NONE");
+  const [activeSection, setActiveSection] = useState<"NONE" | "LANGUAGE" | "PASSWORD">("NONE");
 
   // Password State
   const [oldPassword, setOldPassword] = useState("");
@@ -104,8 +103,7 @@ const { primaryColor, setPrimaryColor } = useColor();
   const [isUpdating, setIsUpdating] = useState(false);
   const [msg, setMsg] = useState({ type: "", text: "" });
 
-  if (loading) return null;
-  if (!user) return null;
+  if (loading || !user) return null;
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,35 +116,21 @@ const { primaryColor, setPrimaryColor } = useColor();
 
     setIsUpdating(true);
     try {
-      await apiClient.post("/user/change-password", {
-        oldPassword,
-        newPassword,
-      });
-
+      await apiClient.post("/user/change-password", { oldPassword, newPassword });
       setMsg({ type: "success", text: t.passSuccess });
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-
-      // Auto-close after success
       setTimeout(() => setActiveSection("NONE"), 2000);
     } catch (error: any) {
-      setMsg({
-        type: "error",
-        text: error.response?.data?.error || "Failed to update password.",
-      });
+      setMsg({ type: "error", text: error.response?.data?.error || "Failed to update password." });
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleLogout = () => {
-    logout();
-  };
-
   const handleModeSwitch = (newRole: "SUB_ADMIN" | "WORKER") => {
     switchRole(newRole);
-    // Force redirect to apply layout changes
     if (newRole === "WORKER") {
       router.push("/mobile");
     } else {
@@ -154,231 +138,230 @@ const { primaryColor, setPrimaryColor } = useColor();
     }
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   const displayRole = user.role?.replace("_", " ");
 
-  // Shared Components
+  // Shared UI Components
   const SectionTitle = ({ title }: { title: string }) => (
-    <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest pl-4 mb-2 mt-6">
+    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2 mb-2 mt-5">
       {title}
     </h3>
   );
 
-  const MenuButton = ({ icon, label, onClick, value, isDestructive }: any) => (
+  const MenuButton = ({ icon, label, onClick, value, isDestructive, isFirst, isLast }: any) => (
     <button
       onClick={onClick}
-      className={`w-full flex items-center justify-between p-4 bg-white border-b border-gray-100 last:border-none active:bg-gray-50 transition-colors ${isDestructive ? "text-red-600" : "text-gray-900"}`}
+      className={`w-full flex items-center justify-between p-5 bg-white border-b border-gray-100 last:border-none active:bg-gray-50 transition-colors ${
+        isDestructive ? "text-red-500" : "text-gray-900"
+      } ${isFirst ? "rounded-t-3xl" : ""} ${isLast ? "rounded-b-3xl" : ""}`}
     >
-      <div className="flex items-center gap-3">
-        <span className="text-xl w-8 text-center">{icon}</span>
-        <span className="font-bold text-base">{label}</span>
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 flex items-center justify-center rounded-2xl text-2xl shadow-inner ${isDestructive ? "bg-red-50 text-red-500" : "bg-gray-50 text-gray-600"}`}>
+          {icon}
+        </div>
+        <span className="font-bold text-lg">{label}</span>
       </div>
-      <div className="flex items-center gap-2">
-        {value && (
-          <span className="text-sm font-bold text-gray-400">{value}</span>
-        )}
-        <span className="text-gray-300 font-bold">›</span>
+      <div className="flex items-center gap-3">
+        {value && <span className="text-[13px] font-black uppercase text-gray-400">{value}</span>}
+        <span className="text-gray-300 font-bold text-xl">›</span>
       </div>
     </button>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-24 md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
-      {/* --- Header --- */}
-     <CurvedHeader
-     title={t.title}
-     size={20}
-     />
+    <div className="min-h-[100dvh] bg-gray-50 flex flex-col pb-24 md:max-w-md md:mx-auto md:shadow-2xl md:border-x border-gray-200">
+      {/* Header handled natively with curves */}
+      <CurvedHeader title={t.title} size={20} />
 
-      <div className="flex flex-col w-full">
-        {/* --- 1. User Banner --- */}
-        <div className="bg-white p-6 border-b border-gray-200 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-3xl mb-3 shadow-inner">
-            <span className="text-blue-600 font-black uppercase">
-              {user.name?.charAt(0) || "👤"}
-            </span>
+      <div className="flex flex-col w-full px-4 -mt-4 relative z-10 gap-3">
+        
+        {/* --- 1. User Banner (ID Style Motif) --- */}
+        <div className={`bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center overflow-hidden relative`}>
+          <div className={`absolute top-0 w-full h-16 ${currentTheme.activeBg}`}></div>
+          <div className={`relative w-24 h-24 mt-2 bg-white rounded-full flex items-center justify-center text-4xl mb-3 border-4 border-white shadow-md z-10`}>
+            {user.name?.charAt(0) || "👤"}
           </div>
-          <h2 className="text-xl font-black text-gray-900 leading-tight">
+          <h2 className="text-2xl font-black text-gray-900 leading-tight">
             {user.name}
           </h2>
-          <p className="text-sm font-bold text-gray-500 mt-1">
+          <p className="text-sm font-bold text-gray-400 mt-1">
             +91 {user.mobileNumber}
           </p>
-          <span className="mt-2 px-3 py-1 bg-gray-100 text-[10px] font-black text-gray-500 rounded uppercase tracking-widest">
+          <span className={`mt-3 px-4 py-1.5 ${currentTheme.activeBg} ${currentTheme.text} text-[10px] font-black rounded-lg uppercase tracking-widest`}>
             {displayRole}
           </span>
         </div>
 
         {/* --- 2. Role Switcher (Only for SUB_ADMINs) --- */}
         {user.role === "SUB_ADMIN" && (
-          <>
+          <div className="mt-2">
             <SectionTitle title={t.viewMode} />
-            <div className="bg-white border-y border-gray-200">
-              <div className="p-2 flex gap-2">
-                <button
-                  onClick={() => handleModeSwitch("SUB_ADMIN")}
-                  className={`flex-1 py-3 text-xs font-black rounded-lg transition-all ${
-                    activeRole === "SUB_ADMIN"
-                      ? "bg-gray-900 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-                >
-                  👔 {t.adminMode}
-                </button>
-                <button
-                  onClick={() => handleModeSwitch("WORKER")}
-                  className={`flex-1 py-3 text-xs font-black rounded-lg transition-all ${
-                    activeRole === "WORKER"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-                >
-                  👷 {t.workerMode}
-                </button>
-              </div>
+            <div className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex gap-2">
+              <button
+                onClick={() => handleModeSwitch("SUB_ADMIN")}
+                className={`flex-1 py-3.5 text-xs font-black rounded-2xl transition-all flex flex-col items-center gap-1 ${
+                  activeRole === "SUB_ADMIN"
+                    ? `bg-gray-900 text-white shadow-md active:scale-95`
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100 active:scale-95"
+                }`}
+              >
+                <span className="text-xl">👔</span>
+                {t.adminMode}
+              </button>
+              <button
+                onClick={() => handleModeSwitch("WORKER")}
+                className={`flex-1 py-3.5 text-xs font-black rounded-2xl transition-all flex flex-col items-center gap-1 ${
+                  activeRole === "WORKER"
+                    ? `${currentTheme.bg} text-white shadow-md active:scale-95`
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100 active:scale-95"
+                }`}
+              >
+                <span className="text-xl">👷</span>
+                {t.workerMode}
+              </button>
             </div>
-          </>
+          </div>
         )}
 
-        {/* --- 3. App Settings Menu --- */}
-        <SectionTitle title="Preferences" />
-        <div className="bg-white border-y border-gray-200 flex flex-col">
-          <MenuButton
-            icon="🌐"
-            label={t.language}
-            value={
-              lang === "mr" ? "मराठी" : lang === "hi" ? "हिंदी" : "English"
-            }
-            onClick={() =>
-              setActiveSection(
-                activeSection === "LANGUAGE" ? "NONE" : "LANGUAGE",
-              )
-            }
-          />
-
-          {/* Language Expansion */}
-          {activeSection === "LANGUAGE" && (
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex gap-2">
-              {["en", "mr", "hi"].map((l) => (
+        {/* --- App Theme Picker (Bento Card) --- */}
+        <div>
+          <SectionTitle title="Appearance" />
+          <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+            <h3 className="text-[14px] font-bold text-gray-800 mb-4">Select Application Theme</h3>
+            <div className="flex gap-4 justify-between">
+              {colors.map((c) => (
                 <button
-                  key={l}
-                  onClick={() => {
-                    setLang(l as Language);
-                    setActiveSection("NONE");
-                  }}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
-                    lang === l
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-gray-200 bg-white text-gray-500"
+                  key={c.value}
+                  onClick={() => setPrimaryColor(c.value)}
+                  className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${c.bg} shadow-md active:scale-90 ${
+                    primaryColor === c.value
+                      ? "ring-4 ring-offset-2 ring-gray-200 scale-110"
+                      : "hover:scale-105"
                   }`}
                 >
-                  {l === "mr" ? "मराठी" : l === "hi" ? "हिंदी" : "Eng"}
+                  {primaryColor === c.value && (
+                    <span className="text-white text-lg drop-shadow">✓</span>
+                  )}
                 </button>
               ))}
             </div>
-          )}
-
-          <MenuButton
-            icon="🔒"
-            label={t.changePassword}
-            onClick={() =>
-              setActiveSection(
-                activeSection === "PASSWORD" ? "NONE" : "PASSWORD",
-              )
-            }
-          />
-
-          {/* Password Expansion */}
-          {activeSection === "PASSWORD" && (
-            <div className="p-4 bg-gray-50 border-b border-gray-100">
-              {msg.text && (
-                <div
-                  className={`mb-4 p-3 rounded-xl text-sm font-bold ${msg.type === "error" ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"}`}
-                >
-                  {msg.text}
-                </div>
-              )}
-              <form
-                onSubmit={handlePasswordChange}
-                className="flex flex-col gap-3"
-              >
-                <input
-                  type="password"
-                  required
-                  placeholder={t.oldPassword}
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full h-12 px-4 bg-white border border-gray-200 rounded-xl focus:border-blue-600 outline-none text-gray-900 font-bold"
-                />
-                <input
-                  type="password"
-                  required
-                  placeholder={t.newPassword}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full h-12 px-4 bg-white border border-gray-200 rounded-xl focus:border-blue-600 outline-none text-gray-900 font-bold"
-                />
-                <input
-                  type="password"
-                  required
-                  placeholder={t.confirmPassword}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full h-12 px-4 bg-white border border-gray-200 rounded-xl focus:border-blue-600 outline-none text-gray-900 font-bold"
-                />
-
-                <div className="flex gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection("NONE")}
-                    className="flex-1 h-12 bg-white text-gray-600 border border-gray-200 font-bold rounded-xl active:bg-gray-100"
-                  >
-                    {t.cancel}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isUpdating || !oldPassword || !newPassword}
-                    className="flex-1 h-12 bg-blue-600 text-white font-bold rounded-xl disabled:bg-gray-300 active:bg-blue-700"
-                  >
-                    {isUpdating ? "..." : t.updateBtn}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+          </div>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mt-4">
-          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b-2 border-gray-100 pb-2 mb-4">
-            App Theme
-          </h3>
-          <div className="flex gap-3 justify-between">
-            {colors.map((c) => (
-              <button
-                key={c.value}
-                onClick={() => setPrimaryColor(c.value)}
-                className={`w-10 h-10 rounded-full transition-all flex items-center justify-center ${c.bg} ${
-                  primaryColor === c.value
-                    ? "ring-4 ring-offset-2 ring-gray-300 scale-110"
-                    : "hover:scale-105"
-                }`}
-              >
-                {primaryColor === c.value && (
-                  <span className="text-white text-sm">✓</span>
+
+        {/* --- 3. App Settings Menu (Bento List) --- */}
+        <div>
+          <SectionTitle title="Preferences" />
+          <div className="bg-white shadow-sm border border-gray-100 rounded-3xl flex flex-col overflow-hidden">
+            <MenuButton
+              icon="🌐"
+              label={t.language}
+              value={lang === "mr" ? "मराठी" : lang === "hi" ? "हिंदी" : "English"}
+              isFirst={true}
+              onClick={() => setActiveSection(activeSection === "LANGUAGE" ? "NONE" : "LANGUAGE")}
+            />
+
+            {/* Language Expansion */}
+            {activeSection === "LANGUAGE" && (
+              <div className="px-5 py-4 bg-gray-50 border-b border-gray-100 flex gap-3 shadow-inner">
+                {["en", "mr", "hi"].map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => {
+                      setLang(l as Language);
+                      setActiveSection("NONE");
+                    }}
+                    className={`flex-1 py-3 rounded-2xl text-sm font-black transition-all active:scale-95 border-2 ${
+                      lang === l
+                        ? `${themeStyles[primaryColor]?.activeBg} ${themeStyles[primaryColor]?.text} ${themeStyles[primaryColor]?.ring} border-${primaryColor}-200`
+                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-100"
+                    }`}
+                  >
+                    {l === "mr" ? "मराठी" : l === "hi" ? "हिंदी" : "English"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <MenuButton
+              icon="🔒"
+              label={t.changePassword}
+              isLast={true}
+              onClick={() => setActiveSection(activeSection === "PASSWORD" ? "NONE" : "PASSWORD")}
+            />
+
+            {/* Password Expansion */}
+            {activeSection === "PASSWORD" && (
+              <div className="p-5 bg-gray-50 shadow-inner">
+                {msg.text && (
+                  <div className={`mb-4 p-4 rounded-2xl text-sm font-black tracking-wide ${msg.type === "error" ? "bg-red-50 text-red-600 border border-red-100" : "bg-green-50 text-green-600 border border-green-100"}`}>
+                    {msg.text}
+                  </div>
                 )}
-              </button>
-            ))}
+                <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
+                  <input
+                    type="password"
+                    required
+                    placeholder={t.oldPassword}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full h-14 px-5 bg-white border border-gray-200 rounded-2xl focus:border-gray-400 outline-none text-gray-900 font-bold shadow-sm transition-all"
+                  />
+                  <input
+                    type="password"
+                    required
+                    placeholder={t.newPassword}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full h-14 px-5 bg-white border border-gray-200 rounded-2xl focus:border-gray-400 outline-none text-gray-900 font-bold shadow-sm transition-all"
+                  />
+                  <input
+                    type="password"
+                    required
+                    placeholder={t.confirmPassword}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full h-14 px-5 bg-white border border-gray-200 rounded-2xl focus:border-gray-400 outline-none text-gray-900 font-bold shadow-sm transition-all"
+                  />
+
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("NONE")}
+                      className="flex-[0.4] h-14 bg-white text-gray-600 border border-gray-200 font-black tracking-wide rounded-2xl active:bg-gray-100 active:scale-95 transition-all shadow-sm"
+                    >
+                      {t.cancel}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUpdating || !oldPassword || !newPassword}
+                      className={`flex-[0.6] h-14 ${currentTheme.bg} text-white font-black tracking-wide rounded-2xl disabled:opacity-50 active:scale-95 transition-all shadow-md`}
+                    >
+                      {isUpdating ? "..." : t.updateBtn}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
 
         {/* --- 4. Account Actions --- */}
-        <SectionTitle title="Account" />
-        <div className="bg-white border-y border-gray-200 flex flex-col">
-          <MenuButton
-            icon="🚪"
-            label={t.logout}
-            isDestructive={true}
-            onClick={handleLogout}
-          />
+        <div className="mt-4 mb-8">
+          <div className="bg-white shadow-sm border border-red-100 rounded-3xl flex flex-col overflow-hidden">
+            <MenuButton
+              icon="🚪"
+              label={t.logout}
+              isDestructive={true}
+              isFirst={true}
+              isLast={true}
+              onClick={handleLogout}
+            />
+          </div>
         </div>
+        
       </div>
     </div>
   );

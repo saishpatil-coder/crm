@@ -86,8 +86,26 @@ export default function Header() {
           </svg>
         </Link>
 
-        {/* App Title */}
-        <h1 className="text-xl font-black tracking-wider">CAMPAIGN</h1>
+        {/* App Title with Tenant Info */}
+        <div className="flex items-center gap-2">
+          {user.tenant?.partyLogoUrl && (
+            <img 
+              src={user.tenant.partyLogoUrl} 
+              alt="Party Logo" 
+              className="w-8 h-8 rounded-full object-cover bg-white/20 p-0.5" 
+            />
+          )}
+          <div className="flex flex-col items-end">
+            <h1 className="text-lg font-black tracking-widest uppercase leading-none truncate max-w-[150px]">
+              {user.tenant?.partyName || "CAMPAIGN"}
+            </h1>
+            {user.tenant?.candidateName && (
+              <span className="text-[10px] font-bold text-white/80 tracking-wider truncate max-w-[150px]">
+                {user.tenant.candidateName}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </header>
   );

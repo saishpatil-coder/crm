@@ -91,8 +91,27 @@ export default function DynamicFilterListPage() {
       }
 
       try {
-        // 1. Fetch all voters instantly from local IndexedDB
-        const allVoters = await localDb.voters.toArray();
+        const dbLangMap: Record<string, string> = {
+          en: "English",
+          mr: "Marathi",
+          hi: "Hindi"
+        };
+        const dbLang = dbLangMap[lang] || "Marathi";
+
+        // 1. Fetch voters matching the current language
+        let allVoters = await localDb.voters
+          .where('language')
+          .equals(dbLang)
+          .toArray();
+
+        // If no voters found for primary language, fallback to Marathi
+        if (allVoters.length === 0 && dbLang !== "Marathi") {
+          allVoters = await localDb.voters
+            .where('language')
+            .equals("Marathi")
+            .toArray();
+        }
+
         const groupMap: Record<string, number> = {};
 
         // 2. Loop through and group them dynamically based on the requested filter
@@ -170,7 +189,7 @@ export default function DynamicFilterListPage() {
     }
 
     processVoterData();
-  }, [filterBy, router, t.unknown]);
+  }, [filterBy, router, t.unknown, lang]);
 
   // When a group is clicked, navigate to the main list with BOTH params
   const handleGroupClick = (groupName: string) => {

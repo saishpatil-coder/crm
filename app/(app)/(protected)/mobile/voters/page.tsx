@@ -4,8 +4,9 @@ import Header from "@/components/Header";
 import VoterCard from "@/components/VoterCard";
 import { useLanguage } from "@/context/LanguageContext";
 import { useOfflineData } from "@/hooks/useOfflineData";
+import { localDb } from "@/lib/db";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 const dict = {
   en: {
@@ -55,6 +56,36 @@ export default function FilteredVoterListPage() {
   const filterType = Array.from(searchParams.keys())[0];
   const filterValue = searchParams.get(filterType) || "";
 
+  const optimizedDexieQuery = useCallback(async () => {
+    // Map URL langs to DB langs
+    const dbLangMap: Record<string, string> = {
+      en: "English",
+      mr: "Marathi",
+      hi: "Hindi"
+    };
+    const dbLang = dbLangMap[lang] || "Marathi";
+
+    // Try to get primary language voters first
+    const primaryVoters = await localDb.voters
+      .where('language')
+      .equals(dbLang)
+      .toArray();
+
+    if (primaryVoters.length > 0) {
+      return primaryVoters;
+    }
+
+    // If no voters found for primary language, fallback to Marathi
+    if (dbLang !== "Marathi") {
+      return await localDb.voters
+        .where('language')
+        .equals("Marathi")
+        .toArray();
+    }
+
+    return [];
+  }, [lang]);
+
   // 1. USE THE HOOK to fetch/manage the offline voters table
   const {
     data: allVoters,
@@ -63,7 +94,7 @@ export default function FilteredVoterListPage() {
     lastSyncedText,
     refresh,
     isOnline,
-  } = useOfflineData<any>("/voters", "voters"); // Make sure your endpoint is correct!
+  } = useOfflineData<any>(`/voters?lang=${lang}`, "voters", optimizedDexieQuery); // Fetch with lang parameter
 console.log(allVoters[0])
   // 2. UseMemo so we only recalculate the filtered list when the raw data or URL changes
   const filteredVoters = useMemo(() => {
@@ -130,6 +161,9 @@ console.log(filterType," ",filterValue)
   const headerTitle = filterValue
     ? `${filterValue} (${filteredVoters.length})`
     : "All Voters";
+
+  // Check if we are showing a fallback language
+  const isFallback = finalDisplayVoters.length > 0 && finalDisplayVoters[0]?.language === 'Marathi' && lang !== 'mr';
 
   return (
     <>
@@ -198,19 +232,39 @@ console.log(filterType," ",filterValue)
               {t.loading}
             </div>
           ) : finalDisplayVoters.length === 0 ? (
-            <div className="text-center mt-16 bg-white p-8 rounded-2xl border border-dashed border-gray-200">
-              <span className="text-5xl block mb-3 opacity-50">📭</span>
-              <p className="text-gray-500 font-bold">{t.noResults}</p>
+            <div className="text-center mt-16 bg-white p-8 rounded-3xl border border-dashed border-gray-200 shadow-sm flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+              <span className="text-6xl block mb-5 drop-shadow-sm">📭</span>
+              <p className="text-gray-900 font-black text-xl mb-3 tracking-tight">
+                {lang === 'en' && 'No voters found for English'}
+                {lang === 'mr' && 'मराठीमध्ये मतदार सापडले नाहीत'}
+                {lang === 'hi' && 'हिंदी के लिए कोई मतदाता नहीं मिला'}
+              </p>
+              <p className="text-gray-500 font-bold text-xs text-center px-2 leading-relaxed opacity-80">
+                {lang === 'en' && 'Please ensure you have uploaded a voter list CSV matching this language from the Admin Dashboard.'}
+                {lang === 'mr' && 'कृपया तुम्ही ऍडमिन डॅशबोर्डवरून या भाषेशी जुळणारी मतदार यादी CSV अपलोड केल्याची खात्री करा.'}
+                {lang === 'hi' && 'कृपया सुनिश्चित करें कि आपने एडमिन डैशबोर्ड से इस भाषा से मेल खाने वाली मतदाता सूची CSV अपलोड की है।'}
+              </p>
             </div>
           ) : (
-            finalDisplayVoters.map((voter) => (
-              <VoterCard
-                key={voter.id}
-                voter={voter}
-                t={t}
-                onClick={() => router.push(`/mobile/voters/${voter.id}`)}
-              />
-            ))
+            <>
+              {isFallback && (
+                <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded shadow-sm flex items-start gap-3 opacity-90 mx-1 mb-1 animate-in fade-in slide-in-from-top-2">
+                  <span className="text-orange-500 text-lg">⚠️</span>
+                  <p className="text-xs text-orange-800 font-bold leading-tight mt-0.5">
+                    {lang === 'en' && 'Showing Marathi voters as a fallback because no English voters were found for this area.'}
+                    {lang === 'hi' && 'कोई हिंदी मतदाता नहीं मिलने के कारण डिफ़ॉल्ट रूप से मराठी मतदाता दिखाए जा रहे हैं।'}
+                  </p>
+                </div>
+              )}
+              {finalDisplayVoters.map((voter) => (
+                <VoterCard
+                  key={voter.id}
+                  voter={voter}
+                  t={t}
+                  onClick={() => router.push(`/mobile/voters/${voter.id}`)}
+                />
+              ))}
+            </>
           )}
         </div>
       </div>

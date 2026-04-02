@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({
     where: { mobileNumber },
-    include: { role: true },
+    include: { role: true, tenant: true },
   });
 
   if (!user || !user.passwordHash) {
