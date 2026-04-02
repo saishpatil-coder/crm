@@ -9,7 +9,7 @@ const withSerwist = withSerwistInit({
   // Disable in development so it doesn't cache your hot-reloads
   disable: process.env.NODE_ENV === "development",
 });
-const nextConfig = {
+const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
@@ -18,6 +18,7 @@ const nextConfig = {
       },
     ],
   },
+  turbopack: {},
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);

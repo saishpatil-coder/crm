@@ -1,12 +1,14 @@
 "use client";
 
+import ClassyLoader from "@/components/ClassyLoader";
 import Header from "@/components/Header";
 import VoterCard from "@/components/VoterCard";
+import VoterExportButton from "@/components/VoterEExportButton";
 import { useLanguage } from "@/context/LanguageContext";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { localDb } from "@/lib/db";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 const dict = {
   en: {
@@ -51,10 +53,17 @@ export default function FilteredVoterListPage() {
   const t = dict[lang as keyof typeof dict];
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(20);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Extract the filter type and value from the URL (e.g., filterType="village", filterValue="नांद्रे")
   const filterType = Array.from(searchParams.keys())[0];
   const filterValue = searchParams.get(filterType) || "";
+
+  // Reset the visible count back to 20 if they type in the search bar or change filters
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [searchQuery, filterValue, filterType]);
 
   const optimizedDexieQuery = useCallback(async () => {
     // Map URL langs to DB langs
@@ -157,6 +166,8 @@ console.log(filterType," ",filterValue)
       v.epicNumber.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const currentlyVisibleVoters = finalDisplayVoters.slice(0, visibleCount);
+
   // Dynamic header title based on what they searched for
   const headerTitle = filterValue
     ? `${filterValue} (${filteredVoters.length})`
@@ -164,6 +175,33 @@ console.log(filterType," ",filterValue)
 
   // Check if we are showing a fallback language
   const isFallback = finalDisplayVoters.length > 0 && finalDisplayVoters[0]?.language === 'Marathi' && lang !== 'mr';
+
+  // The Intersection Observer: Triggers when the user scrolls to the bottom
+  useEffect(() => {
+    // 1. CRITICAL: Don't try to observe anything until the initial data is done loading
+    if (isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + 20); 
+        }
+      },
+      { threshold: 0.1 } 
+    );
+
+    // 2. Safely capture the current div reference
+    const currentTarget = observerTarget.current;
+
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      // 3. Clean up the specific element we observed
+      if (currentTarget) observer.unobserve(currentTarget);
+    };
+  }, [isLoading, finalDisplayVoters.length]);
 
   return (
     <>
@@ -187,26 +225,39 @@ console.log(filterType," ",filterValue)
               </div>
             </div>
 
-            {/* Green Sync Button */}
-            <button
-              onClick={refresh}
-              disabled={isSyncing || !isOnline}
-              className="p-2.5 bg-green-50 text-green-600 rounded-full active:bg-green-100 disabled:opacity-50 disabled:bg-gray-50 disabled:text-gray-400 transition-all shrink-0 border border-green-100"
-            >
-              <svg
-                className={`w-5 h-5 ${isSyncing ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {/* Action Buttons Row */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Export Button (New) */}
+              <VoterExportButton
+                data={finalDisplayVoters}
+                fileName={`${filterValue || "All_Voters"}_List`}
+                variant="icon"
+                menuDirection="bottom"
+                menuAlign="right"
+                disabled={isLoading || finalDisplayVoters.length === 0}
+              />
+
+              {/* Green Sync Button */}
+              <button
+                onClick={refresh}
+                disabled={isSyncing || !isOnline}
+                className="p-2.5 bg-green-50 text-green-600 rounded-full active:bg-green-100 disabled:opacity-50 disabled:bg-gray-50 disabled:text-gray-400 transition-all shrink-0 border border-green-100"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
+                <svg
+                  className={`w-5 h-5 ${isSyncing ? "animate-spin" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Local Search Bar */}
@@ -228,8 +279,7 @@ console.log(filterType," ",filterValue)
         <div className="p-4 flex flex-col gap-3">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center mt-12 text-gray-500 font-bold">
-              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-              {t.loading}
+              <ClassyLoader size={65} color="#09ff09" /> {t.loading}
             </div>
           ) : finalDisplayVoters.length === 0 ? (
             <div className="text-center mt-16 bg-white p-8 rounded-3xl border border-dashed border-gray-200 shadow-sm flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
@@ -256,7 +306,7 @@ console.log(filterType," ",filterValue)
                   </p>
                 </div>
               )}
-              {finalDisplayVoters.map((voter) => (
+              {currentlyVisibleVoters.map((voter) => (
                 <VoterCard
                   key={voter.id}
                   voter={voter}
@@ -264,6 +314,15 @@ console.log(filterType," ",filterValue)
                   onClick={() => router.push(`/mobile/voters/${voter.id}`)}
                 />
               ))}
+              {visibleCount < finalDisplayVoters.length && (
+                <div 
+                  ref={observerTarget} 
+                  className="w-full py-6 flex justify-center items-center text-gray-400 font-bold text-sm"
+                >
+                  <ClassyLoader size={30} color="#09ff09" />
+                  <span className="ml-2">Loading more...</span>
+                </div>
+              )}
             </>
           )}
         </div>

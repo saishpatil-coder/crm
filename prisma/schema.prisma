@@ -154,6 +154,7 @@ model Voter {
   isAlive         Boolean        @default(true)
   isVisited        Boolean  @default(false)
   hasVoted         Boolean  @default(false)
+  isStar           Boolean  @default(false)
   supportLevel     String   @default("UNKNOWN") // UNKNOWN, STRONG, WEAK, OPPOSITION
 
   createdAt        DateTime @default(now())

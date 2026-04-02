@@ -20,7 +20,7 @@ const dict = {
     feed: "Feed",
     voters: "Voters",
     menu: "Menu",
-    tasks: "Tasks",
+    voterInfo: "Voter Info",
     stats: "Stats",
   },
   mr: {
@@ -33,7 +33,7 @@ const dict = {
     feed: "फीड",
     voters: "मतदार",
     menu: "मेनू",
-    tasks: "कामे",
+    voterInfo: "मतदार इन्फो",
     stats: "आकडेवारी",
   },
   hi: {
@@ -46,7 +46,7 @@ const dict = {
     feed: "फ़ीड",
     voters: "मतदाता",
     menu: "मेनू",
-    tasks: "कार्य",
+    voterInfo: "मतदाता इन्फो",
     stats: "आंकड़े",
   },
 };
@@ -161,9 +161,9 @@ export default function BottomNav() {
       },
       { name: t.menu, href: "/mobile/menu", icon: GridIcon, isCenter: true },
       {
-        name: t.tasks,
-        href: "/mobile/tasks",
-        icon: ClipboardIcon,
+        name: t.voterInfo,
+        href: "/mobile/voter-info",
+        icon: VoterInfoIcon,
         isCenter: false,
       },
       {
@@ -296,14 +296,12 @@ function GridIcon({ className }: { className?: string }) {
   );
 }
 
-function ClipboardIcon({ className }: { className?: string }) {
+function VoterInfoIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <rect x="3" y="4" width="18" height="16" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 8h10M7 12h10M7 16h4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="15" cy="16" r="1" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

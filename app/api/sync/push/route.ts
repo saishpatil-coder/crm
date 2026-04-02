@@ -45,6 +45,7 @@ export async function POST(req: Request) {
               supportLevel: item.payload.supportLevel,
               isAlive: item.payload.isAlive,
               hasVoted: item.payload.hasVoted,
+              isStar: item.payload.isStar,
               mobileNumber: item.payload.mobileNumber,
               caste: item.payload.caste,
               notes: item.payload.notes,

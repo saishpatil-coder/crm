@@ -9,12 +9,18 @@ interface VoterExportButtonProps {
   data: any[];
   fileName?: string;
   disabled?: boolean;
+  variant?: "full" | "icon";
+  menuAlign?: "left" | "right";
+  menuDirection?: "top" | "bottom";
 }
 
 export default function VoterExportButton({
   data,
   fileName = "Voter_List",
   disabled = false,
+  variant = "full",
+  menuAlign = "right",
+  menuDirection = "top",
 }: VoterExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -115,14 +121,17 @@ export default function VoterExportButton({
     }, 100);
   };
 
+  const menuAlignClass = menuAlign === "left" ? "left-0" : "right-0";
+  const menuDirectionClass = menuDirection === "top" ? "bottom-full mb-3" : "top-full mt-3";
+
   return (
-    <div className="relative w-full" ref={menuRef}>
+    <div className={`relative ${variant === "full" ? "w-full" : ""}`} ref={menuRef}>
       {/* --- POP-UP MENU --- */}
       {showMenu && (
-        <div className="absolute bottom-full left-0 w-full mb-3 bg-white rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-bottom-2 fade-in duration-200 z-50">
+        <div className={`absolute ${menuDirectionClass} ${menuAlignClass} w-64 bg-white rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden flex flex-col animate-in ${menuDirection === 'top' ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2'} fade-in duration-200 z-50`}>
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <span className="text-xs font-black text-gray-500 uppercase tracking-widest">
-              Choose Format
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+              Export As
             </span>
             <button
               onClick={() => setShowMenu(false)}
@@ -136,13 +145,13 @@ export default function VoterExportButton({
             onClick={handleExcelExport}
             className="flex items-center gap-3 p-4 active:bg-emerald-50 transition-colors text-left"
           >
-            <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl shrink-0">
+            <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-sm shrink-0">
               📊
             </div>
             <div>
-              <p className="font-black text-gray-900">Microsoft Excel</p>
-              <p className="text-[10px] font-bold text-gray-500">
-                Best for editing and sorting
+              <p className="font-black text-gray-900 text-xs text-nowrap">Excel Sheet</p>
+              <p className="text-[8px] font-bold text-gray-500">
+                Best for editing
               </p>
             </div>
           </button>
@@ -153,29 +162,29 @@ export default function VoterExportButton({
             onClick={handlePDFExport}
             className="flex items-center gap-3 p-4 active:bg-red-50 transition-colors text-left"
           >
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl shrink-0">
+            <div className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm shrink-0">
               📄
             </div>
             <div>
-              <p className="font-black text-gray-900">PDF Document</p>
-              <p className="text-[10px] font-bold text-gray-500">
-                Best for printing directly
+              <p className="font-black text-gray-900 text-xs text-nowrap">PDF Document</p>
+              <p className="text-[8px] font-bold text-gray-500">
+                Best for printing
               </p>
             </div>
           </button>
         </div>
       )}
 
-      {/* --- MAIN EXPORT BUTTON --- */}
-      <button
-        onClick={() => setShowMenu(!showMenu)}
-        disabled={disabled || isExporting}
-        className="w-full h-14 bg-gray-900 text-white rounded-2xl font-black shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
-      >
-        {isExporting ? (
-          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-        ) : (
-          <>
+      {/* --- MAIN TRIGGER --- */}
+      {variant === "icon" ? (
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          disabled={disabled || isExporting}
+          className="p-2.5 bg-gray-50 text-gray-900 rounded-full active:bg-gray-100 disabled:opacity-50 disabled:bg-gray-50 disabled:text-gray-400 transition-all shrink-0 border border-gray-200 shadow-sm flex items-center justify-center"
+        >
+          {isExporting ? (
+            <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -191,10 +200,38 @@ export default function VoterExportButton({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Export Data
-          </>
-        )}
-      </button>
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          disabled={disabled || isExporting}
+          className="w-full h-14 bg-gray-900 text-white rounded-2xl font-black shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+        >
+          {isExporting ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export Data
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
