@@ -1,10 +1,6 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
-import {
-  installSerwist,
-  handlePrecaching,
-  registerRuntimeCaching,
-} from "@serwist/sw";
+import { installSerwist } from "@serwist/sw";
 
 export {};
 
@@ -16,16 +12,22 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// 1. Install with Navigation Preload (This fixes the offline dinosaur screen!)
-installSerwist({ 
-  skipWaiting: true, 
+// 1. FORCING THE CACHE: 
+// Add the exact URLs of your app here. The Service Worker will forcefully 
+// download the HTML for these pages in the background so they are ALWAYS available offline.
+const myForcedOfflinePages = [
+  { url: "/", revision: "v1" },
+  { url: "/mobile/voters", revision: "v1" } // Add any other main routes you use!
+];
+
+// 2. Combine Vercel's manifest with our forced pages
+const combinedPrecache = [...(self.__SW_MANIFEST || []), ...myForcedOfflinePages];
+
+// 3. One single function call to wire everything together properly
+installSerwist({
+  precacheEntries: combinedPrecache,
+  skipWaiting: true,
   clientsClaim: true,
-  navigationPreload: true 
+  navigationPreload: true,
+  runtimeCaching: defaultCache,
 });
-
-// 2. Precache the core Next.js files that Vercel generated
-const manifest = self.__SW_MANIFEST || [];
-handlePrecaching(manifest);
-
-// 3. Register the standard Next.js runtime caching (Caches your pages as you visit them)
-defaultCache.forEach((cacheRule) => registerRuntimeCaching(cacheRule));
