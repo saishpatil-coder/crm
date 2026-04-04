@@ -26,14 +26,18 @@ function timeAgo(date: Date): string {
   return date.toLocaleDateString();
 }
 
+// --- NEW: params is now a Promise ---
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 // SEO Tags Generation
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // --- NEW: await the params ---
+  const resolvedParams = await params;
+
   const post = await prisma.post.findUnique({
-    where: { id: parseInt(params.id, 10) },
+    where: { id: parseInt(resolvedParams.id, 10) },
     include: { author: true, tenant: true },
   });
 
@@ -50,23 +54,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      images: post.mediaUrl && post.mediaType === "image" ? [post.mediaUrl] : [],
+      images:
+        post.mediaUrl && post.mediaType === "image" ? [post.mediaUrl] : [],
     },
   };
 }
 
 export default async function PublicPostPage({ params }: Props) {
-  const postId = parseInt(params.id, 10);
+  // --- NEW: await the params ---
+  const resolvedParams = await params;
+  const postId = parseInt(resolvedParams.id, 10);
+
   if (isNaN(postId)) return notFound();
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    include: { 
+    include: {
       author: true,
       tenant: true,
       _count: {
-        select: { likes: true }
-      }
+        select: { likes: true },
+      },
     },
   });
 
@@ -86,10 +94,10 @@ export default async function PublicPostPage({ params }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {post.tenant?.partyLogoUrl && (
-              <img 
-                src={post.tenant.partyLogoUrl} 
-                alt="Party Logo" 
-                className="w-8 h-8 rounded-full object-cover bg-white/20 p-0.5" 
+              <img
+                src={post.tenant.partyLogoUrl}
+                alt="Party Logo"
+                className="w-8 h-8 rounded-full object-cover bg-white/20 p-0.5"
               />
             )}
             <div className="flex flex-col items-end">
@@ -157,14 +165,19 @@ export default async function PublicPostPage({ params }: Props) {
           {/* Footer Metrics */}
           <div className="px-5 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2 text-blue-600 font-black">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-6 h-6"
+              >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               {post._count.likes} Likes
             </div>
-            
+
             {/* CTA for public users */}
-            <Link 
+            <Link
               href="/login"
               className="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl text-sm shadow active:scale-95 transition-all"
             >

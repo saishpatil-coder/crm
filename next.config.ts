@@ -1,15 +1,18 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import crypto from "crypto";
+
+// This generates a unique ID every time you build, forcing the phone to download the newest offline page!
+const revision = crypto.randomUUID();
 
 const withSerwist = withSerwistInit({
-  // Where you will write your service worker logic
   swSrc: "app/sw.ts",
-  // Where Next.js will output the compiled worker for the browser
   swDest: "public/sw.js",
-  // Disable in development so it doesn't cache your hot-reloads
   disable: process.env.NODE_ENV === "development",
-  reloadOnOnline: false, // Prevents the app from randomly refreshing when internet comes back
+  // This explicitly downloads your offline page to the phone!
+  additionalPrecacheEntries: [{ url: "/~offline", revision }],
 });
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -19,7 +22,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  turbopack: {},
+  compiler: {
+    // Keeps your terminal and production console clean
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
+  },
 };
 
 export default withSerwist(nextConfig);

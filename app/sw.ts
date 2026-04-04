@@ -1,70 +1,25 @@
-// /// <reference lib="webworker" />
-// import { defaultCache } from "@serwist/next/worker";
-// import { installSerwist } from "@serwist/sw";
-
-// export {};
-
-// declare global {
-//   interface ServiceWorkerGlobalScope {
-//     __SW_MANIFEST: any;
-//   }
-// }
-
-// declare const self: ServiceWorkerGlobalScope;
-
-// // 1. FORCING THE CACHE: 
-// // Add the exact URLs of your app here. The Service Worker will forcefully 
-// // download the HTML for these pages in the background so they are ALWAYS available offline.
-// const myForcedOfflinePages = [
-//   { url: "/", revision: "v1" },
-//   { url: "/mobile/voters", revision: "v1" } // Add any other main routes you use!
-// ];
-
-// // 2. Combine Vercel's manifest with our forced pages
-// const combinedPrecache = [...(self.__SW_MANIFEST || []), ...myForcedOfflinePages];
-
-// // 3. One single function call to wire everything together properly
-// installSerwist({
-//   precacheEntries: combinedPrecache,
-//   skipWaiting: true,
-//   clientsClaim: true,
-//   navigationPreload: true,
-//   runtimeCaching: defaultCache,
-// });
-
-/// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
-import { installSerwist } from "@serwist/sw";
-
-export {};
+import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
+import { Serwist } from "serwist";
 
 declare global {
-  interface ServiceWorkerGlobalScope {
-    __SW_MANIFEST: any;
+  interface WorkerGlobalScope extends SerwistGlobalConfig {
+    __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
 }
 
 declare const self: ServiceWorkerGlobalScope;
 
-installSerwist({
-  precacheEntries: self.__SW_MANIFEST || [],
+const serwist = new Serwist({
+  precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
-  
-  // 1. Next.js App Router Fixes
-  precacheOptions: {
-    ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^_rsc$/],
-  },
-  
-  // 2. The Memory Bank
+  navigationPreload: true,
   runtimeCaching: defaultCache,
-  
-  // 3. The Ultimate Safety Net
   fallbacks: {
     entries: [
       {
-        url: "/~offline", // This ensures your offline page is aggressively downloaded
-        revision: "v3",   // Bumped the revision to force devices to download the newest version
+        url: "/~offline", // Intercepts the dinosaur and serves this instead!
         matcher({ request }) {
           return request.destination === "document";
         },
@@ -72,3 +27,5 @@ installSerwist({
     ],
   },
 });
+
+serwist.addEventListeners();
