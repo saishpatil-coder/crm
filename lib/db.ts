@@ -21,6 +21,8 @@ export interface LocalVoter {
   isAlive?: boolean;
   notes?: string;
   houseNumber?: string;
+  familyId?: number | null;
+  language?: string | null;
 }
 
 export interface Worker {
@@ -68,10 +70,10 @@ export class CampaignDatabase extends Dexie {
 
     // Define the schema (indexes for fast searching)
     // The '&' means unique. Indexes allow us to filter by boothId or status offline!
-    this.version(6).stores({
+    this.version(7).stores({
       // & epicNumber ensures it is a unique index offline too
       voters:
-        "id,serialNumber, epicNumber, fullName, cityVillage, pollingStation, ward, isVisited, hasVoted, isStar, supportLevel, caste, isAlive, notes, houseNumber, language",
+        "id, serialNumber, epicNumber, fullName, cityVillage, pollingStation, ward, isVisited, hasVoted, isStar, supportLevel, caste, isAlive, notes, houseNumber, language, familyId",
       syncQueue: "++id, action, createdAt",
       tenants: "&id, candidateName, constituencyName",
       workers: "id, tenantId, roleId, name, mobileNumber, status",

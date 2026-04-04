@@ -7,7 +7,6 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 export async function POST(req: Request) {
   try {
-    // 1. Authenticate the worker
     const token = (await cookies()).get("auth_token")?.value;
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,54 +15,100 @@ export async function POST(req: Request) {
     const tenantId = payload.tenantId as number;
     const workerId = payload.userId as number;
 
-    // console.log(payload)
-
-    // 2. Grab the queue array sent from the mobile phone
     const { syncItems } = await req.json();
-
     if (!syncItems || syncItems.length === 0) {
       return NextResponse.json({ message: "Nothing to sync" });
     }
 
-    console.log(
-      `Processing ${syncItems.length} sync items from worker ${workerId}`,
-    );
+    const processedResults = [];
+    
+    // Helper to ensure a family exists or create one
+    const getRealFamilyId = async (localFamilyId: number | null) => {
+      if (!localFamilyId) return null;
+      
+      // If it looks like a real ID (e.g. small number), check if it exists
+      if (localFamilyId < 1000000000) {
+        const existing = await prisma.family.findUnique({ where: { id: localFamilyId } });
+        if (existing) return localFamilyId;
+      }
 
-    // 3. Process the queue using a Prisma Transaction
-    // This ensures that if one fails, they don't all fail, but it's highly efficient
-    const results = await prisma.$transaction(
-      syncItems.map((item: any) => {
-        console.log(item)
-        if (item.action === "UPDATE_VOTER") {
-          return prisma.voter.update({
-            where: {
-              id: item.payload.id,
-              tenantId: tenantId, // Security check to ensure they only edit their own voters
-            },
-            data: {
-              isVisited: item.payload.isVisited,
-              supportLevel: item.payload.supportLevel,
-              isAlive: item.payload.isAlive,
-              hasVoted: item.payload.hasVoted,
-              isStar: item.payload.isStar,
-              mobileNumber: item.payload.mobileNumber,
-              caste: item.payload.caste,
-              notes: item.payload.notes,
-              houseNumber: item.payload.houseNumber,
-              photoUrl: item.payload.photoUrl,
-              lastUpdatedBy: workerId,
-              lastUpdatedAt: new Date(),
-            },
-          });
+      // If it's a large random ID from a client, or not found, create a new record
+      // We create a new Family and return its real database-assigned ID
+      const newFamily = await prisma.family.create({
+        data: { tenantId }
+      });
+      return newFamily.id;
+    };
+
+    // Cache to map localFamilyId -> dbFamilyId within this request
+    const familyMap = new Map<number, number>();
+
+    for (const item of syncItems) {
+      if (item.action === "UPDATE_VOTER") {
+        const { id, ...voterData } = item.payload;
+        
+        let targetFamilyId = voterData.familyId;
+        if (targetFamilyId) {
+          if (familyMap.has(targetFamilyId)) {
+            targetFamilyId = familyMap.get(targetFamilyId);
+          } else {
+            const dbId = await getRealFamilyId(targetFamilyId);
+            familyMap.set(targetFamilyId, dbId!);
+            targetFamilyId = dbId;
+          }
         }
-        // You can add more actions here later, like 'ADD_FAMILY_MEMBER'
-        return prisma.$queryRaw`SELECT 1`; // Dummy return for unhandled actions
-      }),
-    );
+
+        const data: any = {
+          tenantId,
+          fullName: voterData.fullName,
+          firstName: voterData.firstName,
+          lastName: voterData.lastName,
+          age: voterData.age,
+          gender: voterData.gender,
+          epicNumber: voterData.epicNumber,
+          serialNumber: voterData.serialNumber,
+          pollingStation: voterData.pollingStation,
+          ward: voterData.ward,
+          houseNumber: voterData.houseNumber,
+          cityVillage: voterData.cityVillage,
+          isVisited: voterData.isVisited,
+          hasVoted: voterData.hasVoted,
+          isStar: voterData.isStar,
+          supportLevel: voterData.supportLevel,
+          mobileNumber: voterData.mobileNumber,
+          caste: voterData.caste,
+          notes: voterData.notes,
+          familyId: targetFamilyId,
+          language: voterData.language,
+          lastUpdatedBy: workerId,
+          lastUpdatedAt: new Date(),
+        };
+
+        if (id > 0) {
+          const res = await prisma.voter.update({
+            where: { id, tenantId },
+            data,
+          });
+          processedResults.push(res);
+        } else {
+          // New voter upsert logic
+          const existing = await prisma.voter.findFirst({
+            where: { epicNumber: data.epicNumber, language: data.language, tenantId }
+          });
+          if (existing) {
+             const res = await prisma.voter.update({ where: { id: existing.id }, data });
+             processedResults.push(res);
+          } else {
+             const res = await prisma.voter.create({ data });
+             processedResults.push(res);
+          }
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      processedCount: results.length,
+      processedCount: processedResults.length,
     });
   } catch (error) {
     console.error("Push Sync Error:", error);

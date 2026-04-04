@@ -322,23 +322,21 @@ export default function VoterProfileViewPage() {
                 <DetailRow label="Ward" value={voter.ward} />
               </div>
 
-              <div className="flex justify-between items-end mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <DetailRow label={t.houseNo} value={voter.houseNumber} />
-                {voter.houseNumber && (
-                  <button
-                    onClick={() =>
-                      router.push(
-                        `/mobile/voters/list?houseNumber=${voter.houseNumber}`,
-                      )
-                    }
-                    className="bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider active:bg-indigo-200"
-                  >
-                    {t.viewFamily}
-                  </button>
-                )}
+              <div className="flex flex-col gap-3 mb-4">
+                <div className="flex justify-between items-end bg-blue-50/50 p-4 rounded-2xl border border-blue-100 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                  onClick={() => router.push(`/mobile/voters/${voter.id}/family`)}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 leading-none">Family & Relatives</span>
+                    <span className="text-sm font-bold text-gray-900">Manage Household</span>
+                  </div>
+                  <div className="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-50">
+              <div className="flex flex-col gap-1.5 pt-2 border-t border-gray-50 mt-1">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                   Polling Booth
                 </span>
